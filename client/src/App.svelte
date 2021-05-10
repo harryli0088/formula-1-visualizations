@@ -62,15 +62,23 @@
   }))
   $: data = possiblePositions.map(p => ({
     position: p,
-    value: distributionMap[p]
+    value: distributionMap[p] || 0
   }))
 
   $: colorScale = scaleLinear().domain([possiblePositions[0], possiblePositions[possiblePositions.length-3]]).range(["green", "white"])
-  $: xScale = scaleBand().domain(possiblePositions).range([0, 500])
+  $: xScale = scaleBand().domain(possiblePositions).range([50, 500])
   $: yScale = scaleLinear().domain([0, maxValue]).range([500, 0])
+  $: stackedScale = scaleLinear().domain([0, filteredResults.length]).range([500, 0])
+
+  $: stackedData = data.map(d => ({ ...d, lastValue: 0 }))
+  $: data.reduce((acc, d, i) => {
+    stackedData[i].lastValue = acc
+    acc += d.value
+    return acc
+  }, 0)
 
   afterUpdate(() => {
-    console.log(distributionMap)
+    console.log(stackedData)
   })
 </script>
 
@@ -84,9 +92,16 @@
   </div>
   <div>
     <svg width={500} height={500}>
-      {#each data as d}
-        <rect x={xScale(d.position)} width={xScale.bandwidth()} y={yScale(d.value)} height={yScale(0) - yScale(d.value)} fill={colorScale(d.position) || "grey"}/>
-      {/each}
+      <g>
+        {#each stackedData as d}
+          <rect x={0} width={25} y={stackedScale(d.value + d.lastValue)} height={stackedScale(filteredResults.length - d.value)} fill={colorScale(d.position) || "grey"}/>
+        {/each}
+      </g>
+      <g>
+        {#each data as d}
+          <rect x={xScale(d.position)} width={xScale.bandwidth()} y={yScale(d.value)} height={yScale(0) - yScale(d.value)} fill={colorScale(d.position) || "grey"}/>
+        {/each}
+      </g>
     </svg>
   </div>
 </main>
