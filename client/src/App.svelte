@@ -1,84 +1,66 @@
 <script lang="ts">
-  type ObjectMapType<T> = {
-    [key:string]: T
-  }
-
-  type DriverType = {
-    driverId: '854',
-    driverRef: 'mick_schumacher',
-    number: '47',
-    code: 'MSC',
-    forename: 'Mick',
-    surname: 'Schumacher',
-    dob: '1999-03-22',
-    nationality: 'German',
-    url: 'http://en.wikipedia.org/wiki/Mick_Schumacher'
-  }
-
-  type QualifyingType = {
-    qualifyId: string,
-    raceId: string,
-    driverId: string,
-    constructorId: string,
-    number: string,
-    position: string,
-    q1: string,
-    q2: string,
-    q3: string,
-  }
-
-  type RaceType = {
-    raceId: string,
-    year: string,
-    round: string,
-    circuitId: string,
-    name: string,
-    date: string,
-    time: string,
-    url: string,
-  }
-
-  type ResultType = {
-    resultId: string,
-    raceId: string,
-    driverId: string,
-    constructorId: string,
-    number: string,
-    grid: string,
-    position: string,
-    positionText: string,
-    positionOrder: string,
-    points: string,
-    laps: string,
-    time: string,
-    milliseconds: string,
-    fastestLap: string,
-    rank: string,
-    fastestLapTime: string,
-    fastestLapSpeed: string,
-    statusId: string,
-  }
-
-
-  import { onMount } from "svelte";
+  import { onMount, afterUpdate } from "svelte";
   import arrayToObjectMap from './utils/arrayToObjectMap'
   import parseCsvFile from './utils/parseCsvFile'
+  import type {
+    ObjectMapType,
+    DriverType,
+    QualifyingType,
+    RaceType,
+    ResultType,
+  } from './utils/types'
 
 
 	export let name: string;
 
-  let drivers: ObjectMapType<DriverType> = {}
+  let positionFilter = "1"
+  let drivers: DriverType[] = []
+  let qualifying: QualifyingType[] = []
+  let races: RaceType[] = []
+  let results: ResultType[] = []
 
   onMount(async () => {
-    drivers = await parseCsvFile('data/drivers.csv').then(d => arrayToObjectMap(d, "driverId"))
-  console.log(drivers)
+    const result = await Promise.all([
+      parseCsvFile('data/drivers.csv'),
+      parseCsvFile('data/qualifying.csv'),
+      parseCsvFile('data/races.csv'),
+      parseCsvFile('data/results.csv'),
+    ])
+    drivers = result[0] 
+    qualifying = result[1] 
+    races = result[2] 
+    results = result[3] 
   })
+
+  $: possiblePositions = Array.from(new Set(results.map(r => r.position)))
+  $: filteredQualifyings = qualifying.filter(q => q.position === positionFilter)
+  $: filteredResults = filteredQualifyings.map(
+    q => results.find(
+      r => (
+        q.raceId === r.raceId
+        && q.driverId === r.driverId
+      )
+    )
+  )
+  $: distributionMap = filteredResults.reduce((acc, r) => {
+    if(acc[r.position] === undefined) acc[r.position] = 0 //initialize the value to 0 if we are encountering this key for the first time
+    acc[r.position]++ //increment the count for this position
+    return acc
+  }, {})
+
+  afterUpdate(() => {
+    console.log(distributionMap)
+  })
+
   
 </script>
 
 <main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+	<select bind:value={positionFilter}>
+    {#each possiblePositions as p}
+      <option value={p}>{p}</option>
+    {/each}
+  </select>
 </main>
 
 <style>
