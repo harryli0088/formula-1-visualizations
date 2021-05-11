@@ -7,9 +7,9 @@
 
   const SCROLLBAR_SIZE = 17;
 
-  export let colorFunction = () => {} //function(value) { return color;}
-  export let columns:HeadingType[] = [] //[strings of the vertical column texts]
-  export let data:CellDataType[][] = [] //[{ title: string for horizontal row text, values: [array of values that each correspond to a color] }]
+  export let colorFunction:(cell: CellDataType) => string = (cell: CellDataType) => ""
+  export let columns:HeadingType[] = []
+  export let data:CellDataType[][] = []
   export let orderBy:string = ""
   export let rows:HeadingType[] = []
 
@@ -77,11 +77,11 @@
 
 
   //in svg, y is rows and x is columns
-  $: x = scaleBand().range([0, gridWidth]).domain(orders.columns[orderBy]);
-  $: y = scaleBand().range([0, gridHeight]).domain(orders.rows[orderBy]);
+  $: xScale = scaleBand().range([0, gridWidth]).domain(orders.columns[orderBy]);
+  $: yScale = scaleBand().range([0, gridHeight]).domain(orders.rows[orderBy]);
 
-  $: rectWidth = x.bandwidth();
-  $: rectHeight = y.bandwidth();
+  $: rectWidth = xScale.bandwidth();
+  $: rectHeight = yScale.bandwidth();
 
 
   //given a canvas context and some text, return the longest length in pixels
@@ -143,7 +143,7 @@
             {textOffset}
             {transition}
             {verticalTextSize}
-            xScale={x}
+            {xScale}
 
             {mouseover}
             {mouseoverColIndex}
@@ -177,8 +177,8 @@
               {rectWidth}
               {textOffset}
               {transition}
-              xScale={x}
-              yScale={y}
+              {xScale}
+              {yScale}
 
 
               {mouseover}
@@ -196,7 +196,7 @@
               {linesHighlightedWidth}
               {linesNotHighlightedWidth}
               {rectWidth}
-              xScale={x}
+              {xScale}
 
               {mouseoverColIndex}
             />
@@ -208,5 +208,8 @@
 </main>
 
 <style>
-
+  .matrix {
+    overflow: auto;
+    width: 100%;
+  }
 </style>

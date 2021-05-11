@@ -41,7 +41,7 @@
 >
   {#each data as d,i}
     <rect
-      fill={colorFunction(d.z)}
+      fill={colorFunction(d)}
       height={rectHeight}
       width={rectWidth}
       x={xScale(d.c)}

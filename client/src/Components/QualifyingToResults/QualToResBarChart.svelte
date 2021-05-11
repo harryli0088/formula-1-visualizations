@@ -58,6 +58,8 @@
     />
     {#if resultPositionHover}
       <div>Out of {filteredResults.length} qualifyings in which a driver finished in position {possiblePositions[qualifyingPositionFilterIndex]}, {resultPositionHover.value} ({Math.ceil(100*resultPositionHover.value/filteredResults.length)}%) of those drivers finished the race in position {resultPositionHover.key}</div>
+    {:else}
+      Hover over the chart to see more!
     {/if}
   </div>
 </main>

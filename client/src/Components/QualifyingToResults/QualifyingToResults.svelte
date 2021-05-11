@@ -14,9 +14,11 @@
   }, {})
 
   //2d array of qualifyings, where each row is all the qualifyings corresponding to its respective position
+  //qualifyingsForPositions[qualifyingIndex] = [qualifyings for the given qualifyingIndex]
   $: qualifyingsForPositions = possiblePositions.map(p => qualifying.filter(q => q.position === p))
 
   //2d array of results, where each cell is the respective result of the originating qualifying
+  //resultsForQualifyings[qualifyingIndex] = [results for the given qualifyingIndex]
   $: resultsForQualifyings = qualifyingsForPositions.map(
     qRow => qRow.map(
       q => results.find(
@@ -28,6 +30,8 @@
     )
   )
 
+  //array of distribution maps that sum the results for the given qualifying
+  //distributionMaps[qualifyingIndex] = for the given qualifyingIndex, a key-value object { [position]: number of results that ended in this position  }
   $: distributionMaps = resultsForQualifyings.map(
     filteredResults => filteredResults.reduce((acc, r) => {
       if(acc[r.position] === undefined) { //if this is an unexpected position
