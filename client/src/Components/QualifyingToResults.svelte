@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { afterUpdate } from "svelte";
-  import { scaleBand, scaleLinear } from 'd3'
+  import { scaleLinear } from 'd3'
+import { xlink_attr } from 'svelte/internal';
   import BarChart from "../Components/BarChart.svelte"
-  import parseCsvFile from '../utils/parseCsvFile'
+  import Matrix, { processColumns, processRows } from "../Components/Matrix/Matrix.svelte"
   import type {
     QualifyingType,
     ResultType,
@@ -12,6 +12,11 @@
   export let possiblePositions: string[] = []
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
+
+  $: defaultDistributionMap = possiblePositions.reduce((acc, p) => {
+    acc[p] = 0
+    return acc
+  }, {})
 
   //2d array of qualifyings, where each row is all the qualifyings corresponding to its respective position
   $: qualifyingsForPositions = possiblePositions.map(p => qualifying.filter(q => q.position === p))
@@ -33,22 +38,19 @@
 
   $: distributionMaps = resultsForQualifyings.map(
     filteredResults => filteredResults.reduce((acc, r) => {
-      if(acc.distributionMap[r.position] === undefined) acc.distributionMap[r.position] = 0 //initialize the value to 0 if we are encountering this key for the first time
-      acc.distributionMap[r.position]++ //increment the count for this position
-
-      if(acc.maxValue < acc.distributionMap[r.position]) acc.maxValue = acc.distributionMap[r.position]
+      if(acc[r.position] === undefined) { //if this is an unexpected position
+        console.warn(`Encountered unexpected position ${r.position}`)
+      }
+      else {
+        acc[r.position]++ //increment the count for this position
+      }
 
       return acc
-    }, { distributionMap: {}, maxValue: 0 })
+    }, JSON.parse(JSON.stringify(defaultDistributionMap)))
   )
   
   $: filteredResults = resultsForQualifyings[qualifyingPositionFilterIndex] || []
-  $: (
-    {
-      distributionMap: relevantDistributionMap,
-      maxValue
-    } = distributionMaps[qualifyingPositionFilterIndex] || { distributionMap: {}, maxValue: 0 }
-  )
+  $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {}
   $: data = possiblePositions.map(p => ({
     key: p,
     value: relevantDistributionMap[p] || 0
@@ -58,6 +60,18 @@
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex]
+
+
+  let maxMatrixValue = 0
+  $: matrix = distributionMaps.map((d,r) =>
+    Object.values(d).map((z, c) => {
+      maxMatrixValue = Math.max(maxMatrixValue, z)
+      return {c, r, z}
+    })
+  )
+  $: columns = processColumns(matrix,possiblePositions)
+  $: rows = processRows(matrix,possiblePositions)
+  $: matrixColorFunction = scaleLinear().domain([0, maxMatrixValue]).range(["white", "green"])
 </script>
 
 <main>
@@ -93,6 +107,26 @@
     {#if resultPositionHover}
       <div>Out of {filteredResults.length} qualifyings in which a driver finished in position {possiblePositions[qualifyingPositionFilterIndex]}, {resultPositionHover.value} ({Math.ceil(100*resultPositionHover.value/filteredResults.length)}%) of those drivers finished the race in position {resultPositionHover.key}</div>
     {/if}
+
+    <table>
+      <tbody>
+        {#each distributionMaps as d}
+          <tr>
+            {#each Object.entries(d) as cell}
+              <td>{cell[1]}</td>
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+
+    <Matrix
+      colorFunction={matrixColorFunction}
+      {columns}
+      data={matrix}
+      orderBy="name"
+      {rows}
+    />
   </div>
 </main>
 
