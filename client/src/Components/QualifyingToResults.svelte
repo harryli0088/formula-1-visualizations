@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterUpdate } from "svelte";
   import { scaleBand, scaleLinear } from 'd3'
+  import BarChart from "../Components/BarChart.svelte"
   import parseCsvFile from '../utils/parseCsvFile'
   import type {
     QualifyingType,
@@ -49,27 +50,14 @@
     } = distributionMaps[qualifyingPositionFilterIndex] || { distributionMap: {}, maxValue: 0 }
   )
   $: data = possiblePositions.map(p => ({
-    position: p,
+    key: p,
     value: relevantDistributionMap[p] || 0
   }))
 
   $: colorScale = scaleLinear().domain([possiblePositions[0], possiblePositions[possiblePositions.length-3]]).range(["green", "white"])
-  $: xScale = scaleBand().domain(possiblePositions).range([50, 500])
-  $: yScale = scaleLinear().domain([0, maxValue]).range([500, 0])
-  $: stackedScale = scaleLinear().domain([0, filteredResults.length || 0]).range([500, 0])
-
-  $: stackedData = data.map(d => ({ ...d, lastValue: 0 }))
-  $: data.reduce((acc, d, i) => {
-    stackedData[i].lastValue = acc
-    acc += d.value
-    return acc
-  }, 0)
+  $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex]
-
-  afterUpdate(() => {
-    console.log(stackedData)
-  })
 </script>
 
 <main>
@@ -85,51 +73,28 @@
     /> {possiblePositions[qualifyingPositionFilterIndex]}
   </div>
   <div>
-    <svg width={500} height={500}>
-      <g>
-        {#each stackedData as d, i}
-          <rect
-            fill={colorScale(d.position) || "grey"}
-            height={stackedScale(filteredResults.length - d.value)}
-            on:mouseover={e => resultPositionHoverIndex=i}
-            on:mouseout={e => resultPositionHoverIndex=-1}
-            width={25}
-            x={0}
-            y={stackedScale(d.value + d.lastValue)}
-          />
-        {/each}
-      </g>
-      <g>
-        {#each data as d, i}
-          <rect 
-            fill={colorScale(d.position) || "grey"}
-            height={yScale(0) - yScale(d.value)}
-            on:mouseover={e => resultPositionHoverIndex=i}
-            on:mouseout={e => resultPositionHoverIndex=-1}
-            width={xScale.bandwidth()} 
-            x={xScale(d.position)} 
-            y={yScale(d.value)} 
-          />
-        {/each}
-      </g>
-    </svg>
+    <BarChart
+      bind:keyHoverIndex={resultPositionHoverIndex}
+      {colorFunction}
+      {data}
+      stackedTitle="Stacked Finishes"
+      xTitle="Race Finish Position"
+      yTitle="Number of Finishes"
+    />
+    <BarChart
+      bind:keyHoverIndex={resultPositionHoverIndex}
+      {colorFunction}
+      {data}
+      rotated
+      stackedTitle="Stacked Finishes"
+      xTitle="Race Finish Position"
+      yTitle="Number of Finishes"
+    />
     {#if resultPositionHover}
-      <div>Out of {filteredResults.length} drivers who finished qualifying in position {possiblePositions[qualifyingPositionFilterIndex]}, {resultPositionHover.value} ({Math.round(100*resultPositionHover.value/filteredResults.length)}%) finished the actual race in position {resultPositionHover.position}</div>
+      <div>Out of {filteredResults.length} qualifyings in which a driver finished in position {possiblePositions[qualifyingPositionFilterIndex]}, {resultPositionHover.value} ({Math.ceil(100*resultPositionHover.value/filteredResults.length)}%) of those drivers finished the race in position {resultPositionHover.key}</div>
     {/if}
   </div>
 </main>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
 </style>

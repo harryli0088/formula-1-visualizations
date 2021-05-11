@@ -22,10 +22,10 @@ import QualifyingToResults from "./Components/QualifyingToResults.svelte";
       parseCsvFile('data/races.csv'),
       parseCsvFile('data/results.csv'),
     ])
-    drivers = result[0] 
+    drivers = result[0]
     qualifying = result[1] 
     races = result[2] 
-    results = result[3] 
+    results = result[3].filter(r => r.resultId?.length)
   })
 
   $: possiblePositions = Array.from(new Set(results.map(r => r.position))).sort((a,b) => {
