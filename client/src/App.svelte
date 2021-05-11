@@ -7,7 +7,7 @@
     RaceType,
     ResultType,
   } from './utils/types'
-import QualifyingToResults from "./Components/QualifyingToResults.svelte";
+import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte";
 
 
   let drivers: DriverType[] = []
