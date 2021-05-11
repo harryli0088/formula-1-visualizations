@@ -14,7 +14,6 @@ import App from '../App.svelte';
   export let margin: {bottom: number, left: number, right:number, top: number} = {bottom: 40, left: 20, right:0, top: 0}
   export let rotated: boolean = false
   export let stackedTitle: string = ""
-  export let width = 500
   export let xTitle: string = ""
   export let yTitle: string = ""
 
@@ -22,16 +21,20 @@ import App from '../App.svelte';
     keyHoverIndex = index
   }
   
+  let width = 500
+  $:rotatedHeight = rotated ? width: height
+  $:rotatedWidth = rotated ? height: width
+
   let stackedBarsWidth = 25
   let gap = 50
   $: chartLeftOffset = stackedBarsWidth + gap + margin.left
 
-  $: effectiveHeight = height - margin.bottom
+  $: effectiveHeight = rotatedHeight - margin.bottom
   $: keys = data.map(d => d.key)
   $: values = data.map(d => d.value)
   $: maxValue = Math.max(...values)
   $: sum = values.reduce((acc, v) => acc + v, 0)
-  $: xScale = scaleBand().domain(keys).range([chartLeftOffset, width])
+  $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
   $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveHeight, 0])
   $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveHeight, 0])
 
@@ -54,51 +57,53 @@ import App from '../App.svelte';
 </script>
 
 <main>
-  <svg {height} {width} style={`transform: rotate(${rotated?"90":"0"}deg)`}>
-    <g>
-      {#each stackedData as d, i}
-        <rect
-          fill={colorFunction(d.key)}
-          height={stackedScale(sum - d.value)}
-          on:mouseover={e => setKeyHoverIndex(i)}
-          on:mouseout={e => setKeyHoverIndex(-1)}
-          opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
-          width={stackedBarsWidth}
-          x={margin.left}
-          y={stackedScale(d.value + d.lastValue)}
-        />
-      {/each}
-    </g>
-    <g>
-      {#each extendedData as d, i}
-        <rect 
-          fill={colorFunction(d.key)}
-          height={d.height}
-          on:mouseover={e => setKeyHoverIndex(i)}
-          on:mouseout={e => setKeyHoverIndex(-1)}
-          opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
-          width={d.width} 
-          x={d.x} 
-          y={d.y} 
-        />
-        <text
-          class="position-label"
-          dy="1em"
-          text-anchor={rotated ? "end" : "middle"}
-          transform={`
-            translate(${d.x + (rotated ? 0 : barBandWidth/2)},${effectiveHeight + (rotated ? 1 : 0)})
-            rotate(${rotated?"-90":"0"})
-          `}
-          x={0}
-          y={0}
-        >{d.key}</text>
-      {/each}
-    </g>
-
-    <text text-anchor="middle" x={0} y={0} transform={`translate(${width/2},${height - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
-    <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
-    <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={margin.left - 3}>{stackedTitle}</text>
-  </svg>
+  <div bind:clientWidth={width} style={`height: ${height}px`}>
+    <svg height={rotatedHeight} width={rotatedWidth} style={`margin-top: ${(rotatedWidth - width)/2}px; transform: rotate(${rotated?"90":"0"}deg)`}>
+      <g>
+        {#each stackedData as d, i}
+          <rect
+            fill={colorFunction(d.key)}
+            height={stackedScale(sum - d.value)}
+            on:mouseover={e => setKeyHoverIndex(i)}
+            on:mouseout={e => setKeyHoverIndex(-1)}
+            opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
+            width={stackedBarsWidth}
+            x={margin.left}
+            y={stackedScale(d.value + d.lastValue)}
+          />
+        {/each}
+      </g>
+      <g>
+        {#each extendedData as d, i}
+          <rect 
+            fill={colorFunction(d.key)}
+            height={d.height}
+            on:mouseover={e => setKeyHoverIndex(i)}
+            on:mouseout={e => setKeyHoverIndex(-1)}
+            opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
+            width={d.width} 
+            x={d.x} 
+            y={d.y} 
+          />
+          <text
+            class="position-label"
+            dy="1em"
+            text-anchor={rotated ? "end" : "middle"}
+            transform={`
+              translate(${d.x + (rotated ? 0 : barBandWidth/2)},${effectiveHeight + (rotated ? 1 : 0)})
+              rotate(${rotated?"-90":"0"})
+            `}
+            x={0}
+            y={0}
+          >{d.key}</text>
+        {/each}
+      </g>
+  
+      <text text-anchor="middle" x={0} y={0} transform={`translate(${rotatedWidth/2},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={margin.left - 3}>{stackedTitle}</text>
+    </svg>
+  </div>
 </main>
 
 <style>
