@@ -11,7 +11,7 @@ import App from '../App.svelte';
   export let data: BarChartDataType[] = []
   export let height: number = 500
   export let keyHoverIndex: number = -1
-  export let margin: {bottom: number, left: number, right:number, top: number} = {bottom: 40, left: 20, right:0, top: 0}
+  export let margin: {bottom: number, left: number, right:number, top: number} = {bottom: 40, left: 20, right:0, top: 20}
   export let rotated: boolean = false
   export let stackedTitle: string = ""
   export let xTitle: string = ""
@@ -29,20 +29,20 @@ import App from '../App.svelte';
   let gap = 50
   $: chartLeftOffset = stackedBarsWidth + gap + margin.left
 
-  $: effectiveHeight = rotatedHeight - margin.bottom
+  $: effectiveBottom = rotatedHeight - margin.bottom
   $: keys = data.map(d => d.key)
   $: values = data.map(d => d.value)
   $: maxValue = Math.max(...values)
   $: sum = values.reduce((acc, v) => acc + v, 0)
   $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
-  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveHeight, 0])
-  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveHeight, 0])
+  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, margin.top])
+  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, margin.top])
 
   $: barBandWidth = xScale.bandwidth()
 
-  $: stackedData = data.map(d => ({ ...d, lastValue: 0 }))
+  $: stackedData = data.map(d => ({ ...d, lastSum: 0 }))
   $: data.reduce((acc, d, i) => {
-    stackedData[i].lastValue = acc
+    stackedData[i].lastSum = acc
     acc += d.value
     return acc
   }, 0)
@@ -63,13 +63,13 @@ import App from '../App.svelte';
         {#each stackedData as d, i}
           <rect
             fill={colorFunction(d.key)}
-            height={stackedScale(sum - d.value)}
+            height={stackedScale(sum - d.value) - stackedScale(sum)}
             on:mouseover={e => setKeyHoverIndex(i)}
             on:mouseout={e => setKeyHoverIndex(-1)}
             opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
             width={stackedBarsWidth}
             x={margin.left}
-            y={stackedScale(d.value + d.lastValue)}
+            y={stackedScale(d.value + d.lastSum)}
           />
         {/each}
       </g>
@@ -88,20 +88,35 @@ import App from '../App.svelte';
           <text
             class="position-label"
             dy="1em"
+            fill={d.value > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
             transform={`
-              translate(${d.x + (rotated ? 0 : barBandWidth/2)},${effectiveHeight + (rotated ? 1 : 0)})
+              translate(${d.x + (rotated ? 0 : barBandWidth/2)},${effectiveBottom + (rotated ? 1 : 0)})
               rotate(${rotated?"-90":"0"})
             `}
             x={0}
             y={0}
           >{d.key}</text>
+
+          {#if d.value > 0}
+            <text
+              class="position-label"
+              text-anchor={rotated ? "start" : "middle"}
+              dy={rotated ? "1em" : 0}
+              transform={`
+                translate(${d.x + (rotated ? 0 : barBandWidth/2)},${d.y - 2})
+                rotate(${rotated?"-90":"0"})
+              `}
+              x={0}
+              y={0}
+            >{d.value}</text>
+          {/if}
         {/each}
       </g>
   
       <text text-anchor="middle" x={0} y={0} transform={`translate(${rotatedWidth/2},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
-      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
-      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveHeight/2}) rotate(-90)`} dy={margin.left - 3}>{stackedTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={margin.left - 3}>{stackedTitle}</text>
     </svg>
   </div>
 </main>
@@ -117,7 +132,11 @@ import App from '../App.svelte';
     transition: 0.25s;
   }
 
+  text {
+    transition: 0.25s;
+  }
+
   .position-label {
-    font-size: 0.5em;
+    font-size: 12px;
   }
 </style>
