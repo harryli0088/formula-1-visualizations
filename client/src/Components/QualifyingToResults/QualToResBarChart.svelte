@@ -7,13 +7,13 @@
 
   export let distributionMaps:DistributionMapType[] = []
   export let possiblePositions: string[] = []
-  export let resultsForQualifyings: ResultType[][] = []
+  export let resultsForPositions: ResultType[][] = []
 
 
   let qualifyingPositionFilterIndex:number = 0 //the current qualifying position to look at
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
   
-  $: filteredResults = resultsForQualifyings[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
+  $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
   $: data = possiblePositions.map(p => ({ //map over all the positions to make bar chart data
     key: p,

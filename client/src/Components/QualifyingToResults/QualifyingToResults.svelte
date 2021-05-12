@@ -3,10 +3,28 @@
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
 
-
-  export let possiblePositions: string[] = []
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
+
+  $: qualIdToResultIndex = qualifying.reduce((acc, q) => {
+    acc[q.qualifyId] = results.findIndex(
+      r => (
+        q.raceId === r.raceId
+        && q.driverId === r.driverId
+      )
+    )
+    return acc
+  }, {} as {[qualifyId: string]: number})
+
+  $: resultsForQualifying = qualifying.map(q => results[qualIdToResultIndex[q.qualifyId]]).filter(r => r)
+
+  $: possiblePositions = Array.from(new Set(resultsForQualifying.map(r => r.position))).sort((a,b) => {
+    const parsedA = parseInt(a)
+    const parsedB = parseInt(b)
+    if(isNaN(parsedA)) return 1
+    if(isNaN(parsedB)) return -1
+    return parsedA - parsedB
+  })
 
   $: defaultDistributionMap = possiblePositions.reduce((acc, p) => {
     acc[p] = 0
@@ -18,21 +36,16 @@
   $: qualifyingsForPositions = possiblePositions.map(p => qualifying.filter(q => q.position === p))
 
   //2d array of results, where each cell is the respective result of the originating qualifying
-  //resultsForQualifyings[qualifyingIndex] = [results for the given qualifyingIndex]
-  $: resultsForQualifyings = qualifyingsForPositions.map(
+  //resultsForPositions[qualifyingIndex] = [results for the given qualifyingIndex]
+  $: resultsForPositions = qualifyingsForPositions.map(
     qRow => qRow.map(
-      q => results.find(
-        r => (
-          q.raceId === r.raceId
-          && q.driverId === r.driverId
-        )
-      )
+      q => results[qualIdToResultIndex[q.qualifyId]]
     )
   )
 
   //array of distribution maps that sum the results for the given qualifying
   //distributionMaps[qualifyingIndex] = for the given qualifyingIndex, a key-value object { [position]: number of results that ended in this position  }
-  $: distributionMaps = resultsForQualifyings.map(
+  $: distributionMaps = resultsForPositions.map(
     filteredResults => filteredResults.reduce((acc, r) => {
       if(acc[r.position] === undefined) { //if this is an unexpected position
         console.warn(`Encountered unexpected position ${r.position}`)
@@ -51,7 +64,7 @@
     <QualToResBarChart
       {distributionMaps}
       {possiblePositions}
-      {resultsForQualifyings}
+      {resultsForPositions}
     />
 
     <QualToResMatrix

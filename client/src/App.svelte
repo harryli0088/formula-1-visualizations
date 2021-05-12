@@ -27,19 +27,10 @@ import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToRe
     races = result[2] 
     results = result[3].filter(r => r.resultId?.length)
   })
-
-  $: possiblePositions = Array.from(new Set(results.map(r => r.position))).sort((a,b) => {
-    const parsedA = parseInt(a)
-    const parsedB = parseInt(b)
-    if(isNaN(parsedA)) return 1
-    if(isNaN(parsedB)) return -1
-    return parsedA - parsedB
-  })
 </script>
 
 <main>
 	<QualifyingToResults
-    {possiblePositions}
     {qualifying}
     {results}
   />
