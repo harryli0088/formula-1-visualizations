@@ -31,10 +31,18 @@ import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToRe
 
 <main>
 	<QualifyingToResults
+    {drivers}
     {qualifying}
     {results}
   />
 </main>
 
 <style>
+  :global([data-svelte-typeahead] label) {
+    font-size: 1em;
+  }
+  :global(.svelte-typeahead-list) {
+    margin: 0;
+    z-index: 2;
+  }
 </style>

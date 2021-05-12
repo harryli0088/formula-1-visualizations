@@ -1,12 +1,18 @@
 <script lang="ts">
-  import type { QualifyingType, ResultType } from '../../utils/types'
+  import Typeahead from "svelte-typeahead"
+  import type { DriverType, QualifyingType, ResultType } from '../../utils/types'
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
 
+  export let drivers: DriverType[] = []
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
 
-  $: qualIdToResultIndex = qualifying.reduce((acc, q) => {
+  let driverIdFilter: string = ""
+
+  $: filteredQualifying = qualifying.filter(q => driverIdFilter==="" || q.driverId === driverIdFilter)
+
+  $: qualIdToResultIndex = filteredQualifying.reduce((acc, q) => {
     acc[q.qualifyId] = results.findIndex(
       r => (
         q.raceId === r.raceId
@@ -16,7 +22,7 @@
     return acc
   }, {} as {[qualifyId: string]: number})
 
-  $: resultsForQualifying = qualifying.map(q => results[qualIdToResultIndex[q.qualifyId]]).filter(r => r)
+  $: resultsForQualifying = filteredQualifying.map(q => results[qualIdToResultIndex[q.qualifyId]]).filter(r => r)
 
   $: possiblePositions = Array.from(new Set(resultsForQualifying.map(r => r.position))).sort((a,b) => {
     const parsedA = parseInt(a)
@@ -33,7 +39,7 @@
 
   //2d array of qualifyings, where each row is all the qualifyings corresponding to its respective position
   //qualifyingsForPositions[qualifyingIndex] = [qualifyings for the given qualifyingIndex]
-  $: qualifyingsForPositions = possiblePositions.map(p => qualifying.filter(q => q.position === p))
+  $: qualifyingsForPositions = possiblePositions.map(p => filteredQualifying.filter(q => q.position === p))
 
   //2d array of results, where each cell is the respective result of the originating qualifying
   //resultsForPositions[qualifyingIndex] = [results for the given qualifyingIndex]
@@ -57,15 +63,33 @@
       return acc
     }, JSON.parse(JSON.stringify(defaultDistributionMap)))
   )
+
+  const extract = (d: DriverType) => `${d.forename} ${d.surname}`
 </script>
 
 <main>
+  <h1>How have drivers' qualifying finishes correlated with their race results?</h1>
+  <div>
+    <Typeahead
+      data={drivers}
+      {extract}
+      label="Filter by Driver"
+      limit={5}
+      on:select={e => driverIdFilter = e.detail.original.driverId}
+      on:clear={() => driverIdFilter = ""}
+    />
+  </div>
+
+  <hr/>
+
 	<div>
     <QualToResBarChart
       {distributionMaps}
       {possiblePositions}
       {resultsForPositions}
     />
+
+    <hr/>
 
     <QualToResMatrix
       {distributionMaps}
@@ -75,4 +99,7 @@
 </main>
 
 <style>
+  main {
+    padding: 1em;
+  }
 </style>

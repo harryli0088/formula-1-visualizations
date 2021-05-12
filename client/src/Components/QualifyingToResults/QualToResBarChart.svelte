@@ -12,6 +12,7 @@
 
   let qualifyingPositionFilterIndex:number = 0 //the current qualifying position to look at
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
+  let rotated: boolean = false
   
   $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
@@ -27,7 +28,8 @@
 </script>
 
 <main>
-	<div>Qualifying Position</div>
+  <h3>Race Results Given a Qualifying Position</h3>
+	<div>Qualifying Position:</div>
   <div class="positions-container">
     {#each possiblePositions as p,i}
       <span class="position-option-container">
@@ -38,22 +40,15 @@
       </span>
     {/each}
   </div>
+  <div>Rotate Chart <input type="checkbox" bind:checked={rotated}/></div>
 
   <div>
     <BarChart
       bind:keyHoverIndex={resultPositionHoverIndex}
       {colorFunction}
       {data}
-      stackedTitle="Stacked Finishes"
-      xTitle="Race Finish Position"
-      yTitle="Number of Finishes"
-    />
-    <BarChart
-      bind:keyHoverIndex={resultPositionHoverIndex}
-      {colorFunction}
-      {data}
-      rotated
-      stackedTitle="Stacked Finishes"
+      {rotated}
+      stackedTitle="Stacked Together"
       xTitle="Race Finish Position"
       yTitle="Number of Finishes"
     />
@@ -66,6 +61,10 @@
 </main>
 
 <style>
+  .positions-container {
+    margin-top: 0.5em;
+  }
+
   .position-option-container {
     display: inline-block;
   }
@@ -73,8 +72,8 @@
   .position-option {
     border: 1px solid gray;
     border-radius: 50%;
-    height: 2em;
-    width: 2em;
+    height: 1.75em;
+    width: 1.75em;
     display: flex;
     justify-content: center;
     align-items: center;

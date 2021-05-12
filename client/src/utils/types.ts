@@ -3,15 +3,15 @@ export type ObjectMapType<T> = {
 }
 
 export type DriverType = {
-  driverId: '854',
-  driverRef: 'mick_schumacher',
-  number: '47',
-  code: 'MSC',
-  forename: 'Mick',
-  surname: 'Schumacher',
-  dob: '1999-03-22',
-  nationality: 'German',
-  url: 'http://en.wikipedia.org/wiki/Mick_Schumacher'
+  driverId: string,
+  driverRef: string,
+  number: string,
+  code: string,
+  forename: string,
+  surname: string,
+  dob: string,
+  nationality: string,
+  url: string,
 }
 
 export type QualifyingType = {
