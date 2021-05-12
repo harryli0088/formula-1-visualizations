@@ -1,6 +1,5 @@
 <script lang="ts">
   import { scaleBand, scaleLinear } from 'd3'
-import App from '../App.svelte';
 
   type BarChartDataType = {
     key: string,
@@ -11,32 +10,46 @@ import App from '../App.svelte';
   export let data: BarChartDataType[] = []
   export let height: number = 500
   export let keyHoverIndex: number = -1
-  export let margin: {bottom: number, left: number, right:number, top: number} = {bottom: 40, left: 20, right:0, top: 20}
   export let rotated: boolean = false
   export let stackedTitle: string = ""
   export let xTitle: string = ""
   export let yTitle: string = ""
 
+  //constants
+  const ctx = document.createElement('canvas').getContext("2d")
+  const gap = 50
+  const stackedBarsWidth = 25
+  const textHeight = 20
+
   function setKeyHoverIndex(index: number) {
     keyHoverIndex = index
   }
-  
-  let width = 500
-  $:rotatedHeight = rotated ? width: height
-  $:rotatedWidth = rotated ? height: width
 
-  let stackedBarsWidth = 25
-  let gap = 50
-  $: chartLeftOffset = stackedBarsWidth + gap + margin.left
-
-  $: effectiveBottom = rotatedHeight - margin.bottom
+  //data calculations
   $: keys = data.map(d => d.key)
+  $: longestKey = keys.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
   $: values = data.map(d => d.value)
   $: maxValue = Math.max(...values)
   $: sum = values.reduce((acc, v) => acc + v, 0)
+
+  //pixel calculations
+  let width = 500
+  $: rotatedHeight = rotated ? width: height
+  $: rotatedWidth = rotated ? height: width
+
+  $: paddingBottom = (
+    (rotated ? ctx.measureText(longestKey).width : textHeight)
+    + (xTitle ? textHeight : 0)
+    + 10
+  )
+  $: paddingLeft = (stackedTitle ? textHeight : 0)
+  $: paddingTop = (rotated ? ctx.measureText(maxValue.toString()).width + 5 : textHeight)
+
+  $: effectiveBottom = rotatedHeight - paddingBottom
+  $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
   $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
-  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, margin.top])
-  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, margin.top])
+  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
+  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, paddingTop])
 
   $: barBandWidth = xScale.bandwidth()
 
@@ -68,7 +81,7 @@ import App from '../App.svelte';
             on:mouseout={e => setKeyHoverIndex(-1)}
             opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
             width={stackedBarsWidth}
-            x={margin.left}
+            x={paddingLeft}
             y={stackedScale(d.value + d.lastSum)}
           />
         {/each}
@@ -86,7 +99,7 @@ import App from '../App.svelte';
             y={d.y} 
           />
           <text
-            class="position-label"
+            class="key-label"
             dy="1em"
             fill={d.value > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
@@ -100,7 +113,7 @@ import App from '../App.svelte';
 
           {#if d.value > 0}
             <text
-              class="position-label"
+              class="value-label"
               text-anchor={rotated ? "start" : "middle"}
               dy={rotated ? "1em" : 0}
               transform={`
@@ -116,7 +129,7 @@ import App from '../App.svelte';
   
       <text text-anchor="middle" x={0} y={0} transform={`translate(${rotatedWidth/2},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
       <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
-      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={margin.left - 3}>{stackedTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={paddingLeft - 3}>{stackedTitle}</text>
     </svg>
   </div>
 </main>
@@ -136,7 +149,11 @@ import App from '../App.svelte';
     transition: 0.25s;
   }
 
-  .position-label {
+  .key-label {
+    font-size: 14px;
+  }
+
+  .value-label {
     font-size: 12px;
   }
 </style>

@@ -34,7 +34,7 @@
   let mouseoverRowIndex: number = -1
   let width: number = 500
 
-  const ctx = document.createElement('canvas').getContext("2d");
+  const ctx = document.createElement('canvas').getContext("2d")
   $: ctx.font = font
 
   $: mouseover = (e, rowIndex: number, colIndex: number) => {

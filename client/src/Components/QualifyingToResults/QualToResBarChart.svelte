@@ -27,17 +27,18 @@
 </script>
 
 <main>
-	<div>
-    <label for="qualifying-filter">Qualifying Position</label>
-    <input
-      id="qualifying-filter"
-      on:change={e => qualifyingPositionFilterIndex = parseInt(e.target.value)}
-      max={possiblePositions.length - 1}
-      min={0} 
-      type="range" 
-      value={qualifyingPositionFilterIndex}
-    /> {possiblePositions[qualifyingPositionFilterIndex]}
+	<div>Qualifying Position</div>
+  <div class="positions-container">
+    {#each possiblePositions as p,i}
+      <span class="position-option-container">
+        <span
+          class={`position-option ${qualifyingPositionFilterIndex===i ? "selected" : ""}`}
+          on:click={e => qualifyingPositionFilterIndex = i}
+        >{p}</span>
+      </span>
+    {/each}
   </div>
+
   <div>
     <BarChart
       bind:keyHoverIndex={resultPositionHoverIndex}
@@ -65,4 +66,33 @@
 </main>
 
 <style>
+  .position-option-container {
+    display: inline-block;
+  }
+
+  .position-option {
+    border: 1px solid gray;
+    border-radius: 50%;
+    height: 2em;
+    width: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0.5em;
+    margin-right: 0.5em;
+    transition: 0.5s;
+  }
+  .position-option:hover {
+    transform: scale(1.2);
+  }
+  .position-option:active {
+    transform: scale(0.9);
+  }
+  .position-option.selected {
+    border-color: green;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+  }
 </style>
