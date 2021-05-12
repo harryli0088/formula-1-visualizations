@@ -6,6 +6,12 @@
 
 
   export let distributionMaps:DistributionMapType[] = []
+  export let getHoverText: (
+    qualNum: number,
+    qualPosition: string,
+    resultNum: number,
+    resultPosition: string,
+  ) => string = (qualNum, qualPosition, resultNum, resultPosition) => ""
   export let possiblePositions: string[] = []
   export let resultsForPositions: ResultType[][] = []
 
@@ -21,7 +27,7 @@
     value: relevantDistributionMap[p] || 0
   }))
 
-  $: colorScale = scaleLinear().domain([possiblePositions[0], possiblePositions[possiblePositions.length-3]]).range(["green", "white"])
+  $: colorScale = scaleLinear().domain([possiblePositions[0], possiblePositions[possiblePositions.length-2]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex] //get the bar chart result data being hovered over
@@ -53,7 +59,7 @@
       yTitle="Number of Finishes"
     />
     {#if resultPositionHover}
-      <div>Out of {filteredResults.length} qualifyings in which a driver finished in position {possiblePositions[qualifyingPositionFilterIndex]}, {resultPositionHover.value} ({Math.ceil(100*resultPositionHover.value/filteredResults.length)}%) of those drivers finished the race in position {resultPositionHover.key}</div>
+      <div>{getHoverText(filteredResults.length, possiblePositions[qualifyingPositionFilterIndex], resultPositionHover.value, resultPositionHover.key)}</div>
     {:else}
       Hover over the chart to see more!
     {/if}

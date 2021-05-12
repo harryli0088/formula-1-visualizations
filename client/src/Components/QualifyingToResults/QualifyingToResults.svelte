@@ -8,10 +8,22 @@
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
 
-  let driverIdFilter: string = ""
+
+  const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}` //used for Typeahead
+
+  let driverFilter: DriverType | null = null
+  $: driverFullName = driverFilter ? getFullDriverName(driverFilter) : ""
+  $: getHoverText = (
+    qualNum: number,
+    qualPosition: string,
+    resultNum: number,
+    resultPosition: string,
+  ) => (
+    `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} finished the race in position ${resultPosition} a total of ${resultNum} times (${Math.ceil(100*resultNum/qualNum)}%)`
+  )
 
   //filter the qualifyings based on the driver
-  $: filteredQualifying = qualifying.filter(q => driverIdFilter==="" || q.driverId === driverIdFilter)
+  $: filteredQualifying = qualifying.filter(q => driverFilter===null || q.driverId === driverFilter.driverId)
 
   //create an object that maps the qualifying id to the result
   $: qualIdToResult = filteredQualifying.reduce((acc, q) => {
@@ -73,7 +85,6 @@
     }, JSON.parse(JSON.stringify(defaultDistributionMap)))
   )
 
-  const extract = (d: DriverType) => `${d.forename} ${d.surname}`
 </script>
 
 <main>
@@ -81,11 +92,11 @@
   <div>
     <Typeahead
       data={drivers}
-      {extract}
+      extract={getFullDriverName}
       label="Filter by Driver"
       limit={5}
-      on:select={e => driverIdFilter = e.detail.original.driverId}
-      on:clear={() => driverIdFilter = ""}
+      on:select={e => driverFilter = e.detail.original}
+      on:clear={() => driverFilter = null}
     />
   </div>
 
@@ -94,6 +105,7 @@
 	<div>
     <QualToResBarChart
       {distributionMaps}
+      {getHoverText}
       {possiblePositions}
       {resultsForPositions}
     />
@@ -102,6 +114,7 @@
 
     <QualToResMatrix
       {distributionMaps}
+      {getHoverText}
       {possiblePositions}
     />
   </div>
