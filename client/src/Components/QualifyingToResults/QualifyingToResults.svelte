@@ -10,28 +10,37 @@
 
   let driverIdFilter: string = ""
 
+  //filter the qualifyings based on the driver
   $: filteredQualifying = qualifying.filter(q => driverIdFilter==="" || q.driverId === driverIdFilter)
 
-  $: qualIdToResultIndex = filteredQualifying.reduce((acc, q) => {
-    acc[q.qualifyId] = results.findIndex(
-      r => (
-        q.raceId === r.raceId
-        && q.driverId === r.driverId
+  //create an object that maps the qualifying id to the result
+  $: qualIdToResult = filteredQualifying.reduce((acc, q) => {
+    acc[q.qualifyId] = results.find( //find and set the result
+      r => ( //given the result
+        q.raceId === r.raceId //must have the same race id
+        && q.driverId === r.driverId //must have the same driver id
       )
     )
     return acc
-  }, {} as {[qualifyId: string]: number})
+  }, {} as {[qualifyId: string]: ResultType})
 
-  $: resultsForQualifying = filteredQualifying.map(q => results[qualIdToResultIndex[q.qualifyId]]).filter(r => r)
+  $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
-  $: possiblePositions = Array.from(new Set(resultsForQualifying.map(r => r.position))).sort((a,b) => {
+  //create an array of all the possible positions given the filtered results
+  $: possiblePositions = Array.from( //convert the Set into an Array
+    new Set( //create a new Set to get rid of duplicates
+      fitleredResults.map(r => r.position) //create an array of all the result positions
+    )
+  ).sort((a,b) => { //sort the positions so that the numbers come first, followed by "\N"
     const parsedA = parseInt(a)
     const parsedB = parseInt(b)
-    if(isNaN(parsedA)) return 1
-    if(isNaN(parsedB)) return -1
-    return parsedA - parsedB
+    if(isNaN(parsedA)) return 1 //if a is not a number
+    if(isNaN(parsedB)) return -1 //if b is not a number
+    return parsedA - parsedB //else both are numbers, return the difference
   })
 
+  //create a default distribution map where each position has a value of 0
+  //ie { 1: 0, 2: 0, 3: 0, ... "\N": 0 }
   $: defaultDistributionMap = possiblePositions.reduce((acc, p) => {
     acc[p] = 0
     return acc
@@ -45,7 +54,7 @@
   //resultsForPositions[qualifyingIndex] = [results for the given qualifyingIndex]
   $: resultsForPositions = qualifyingsForPositions.map(
     qRow => qRow.map(
-      q => results[qualIdToResultIndex[q.qualifyId]]
+      q => qualIdToResult[q.qualifyId]
     )
   )
 
@@ -68,7 +77,7 @@
 </script>
 
 <main>
-  <h1>How have drivers' qualifying finishes correlated with their race results?</h1>
+  <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
   <div>
     <Typeahead
       data={drivers}
