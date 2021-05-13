@@ -1,6 +1,9 @@
 <script lang="ts">
   import Typeahead from "svelte-typeahead"
+
+  import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import type { DriverType, QualifyingType, ResultType } from '../../utils/types'
+
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
 
@@ -11,6 +14,12 @@
 
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}` //used for Typeahead
 
+  // $: {
+  //   if(driverFilter) {
+  //     const title = driverFilter.url.slice(29) //str.indexOf("http://en.wikipedia.org/wiki/") + "http://en.wikipedia.org/wiki/".length
+  //     fetchWikipediaImages(title).then(console.log)
+  //   }
+  // }
   let driverFilter: DriverType | null = null
   $: driverFullName = driverFilter ? getFullDriverName(driverFilter) : ""
   $: getHoverText = (

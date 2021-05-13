@@ -1,5 +1,8 @@
 <script lang="ts">
+  // import Icon from 'fa-svelte'
+  // import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons' //<Icon icon={faQuestionCircle}/>
   import { scaleLinear } from 'd3'
+
   import BarChart from "../BarChart.svelte"
   import type { ResultType } from '../../utils/types'
   import type { DistributionMapType } from './types';

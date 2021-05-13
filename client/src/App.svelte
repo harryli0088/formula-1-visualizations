@@ -75,4 +75,8 @@ import arrayToObjectMap from "./utils/arrayToObjectMap";
     margin: 0;
     z-index: 2;
   }
+
+  :global(.popover-content) {
+    background: white;
+  }
 </style>
