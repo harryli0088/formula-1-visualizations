@@ -4,8 +4,10 @@
   import { scaleLinear } from 'd3'
 
   import BarChart from "../BarChart.svelte"
+  import type { DistributionMapType } from './types'
+
+  import formatPosition from '../../utils/formatPosition'
   import type { ResultType } from '../../utils/types'
-  import type { DistributionMapType } from './types';
 
 
   export let distributionMaps:DistributionMapType[] = []
@@ -34,7 +36,7 @@
   $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
   $: data = possiblePositions.map(p => ({ //map over all the positions to make bar chart data
-    key: p,
+    key: formatPosition(p),
     value: relevantDistributionMap[p] || 0
   }))
 

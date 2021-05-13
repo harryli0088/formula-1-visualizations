@@ -27,9 +27,15 @@
     qualPosition: string,
     resultNum: number,
     resultPosition: string,
-  ) => (
-    `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} finished the race in position ${resultPosition} a total of ${resultNum} times (${Math.ceil(100*resultNum/qualNum)}%)`
-  )
+  ) => {
+    const resultPositionStr = (
+      resultPosition === "DNF"
+      ? `did not finish (DNF) the race`
+      : `finished the race in position ${resultPosition}`
+    )
+
+    return `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} ${resultPositionStr} a total of ${resultNum} times (${Math.ceil(100*resultNum/qualNum)}%)`
+  }
 
   //filter the qualifyings based on the driver
   $: filteredQualifying = qualifying.filter(q => driverFilter===null || q.driverId === driverFilter.driverId)
@@ -102,7 +108,7 @@
     <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
 
     <div>
-      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their fastest lap tops, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below!</p>
+      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their fastest lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below!</p>
     </div>
     <div>
       <Typeahead

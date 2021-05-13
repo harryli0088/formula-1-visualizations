@@ -4,6 +4,8 @@
   import type { CellDataType } from '../Matrix/types';
   import type { DistributionMapType } from './types';
 
+  import formatPosition from '../../utils/formatPosition';
+
   export let distributionMaps: DistributionMapType[] = []
   export let getHoverText: (
     qualNum: number,
@@ -25,7 +27,7 @@
     Math.max(acc, row.reduce((acc,cell) => Math.max(acc, cell.z), 0)),
     0
   )
-  $: columns = processColumns(matrix,possiblePositions)
+  $: columns = processColumns(matrix,possiblePositions.map(p => formatPosition(p)))
   $: rows = processRows(matrix,numericPositions)
   $: colorScale = scaleLinear().domain([0, Math.sqrt(maxMatrixValue)]).range(["white", "green"])
   $: colorFunction = (cell: CellDataType) => colorScale(Math.sqrt(cell.z)) || ""
@@ -53,7 +55,7 @@
   />
 
   {#if hoverCell}
-    <div>{getHoverText(rows[hoverCell.r].count, possiblePositions[hoverCell.r], hoverCell.z, possiblePositions[hoverCell.c])}</div>
+    <div>{getHoverText(rows[hoverCell.r].count, possiblePositions[hoverCell.r], hoverCell.z, columns[hoverCell.c].name)}</div>
   {:else}
     Hover over the matrix to see more!
   {/if}
