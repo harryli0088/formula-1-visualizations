@@ -26,6 +26,7 @@
   $: {
     //going from all drivers to a driver with a smaller spread of qualifying positions would make qualifyingPositionFilterIndex too big
     //if it is too big, we want to set it back to 0
+    //TODO try to find an index with data
     if(resultsForPositions[qualifyingPositionFilterIndex] === undefined) { //if the qualifying position filter is invalid
       qualifyingPositionFilterIndex = 0 //set it to zero
     }

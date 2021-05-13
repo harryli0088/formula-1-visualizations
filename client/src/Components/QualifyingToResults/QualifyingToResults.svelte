@@ -11,8 +11,28 @@
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
 
-
+  let driverFilter: DriverType | null = null
+  let driverFilterValue = ""
+  const driverFilterNames = [
+    "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
+  ]
+  function setDriverFilters(driver: DriverType | null) {
+    if(driver) {
+      driverFilter = driver
+      driverFilterValue = getFullDriverName(driver)
+    }
+    else {
+      driverFilter = null
+      driverFilterValue = ""
+    }
+  }
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}` //used for Typeahead
+  $: driversForFilterButtons = (
+    () => {
+      const tmpDrivers = drivers.filter(d => driverFilterNames.includes(getFullDriverName(d)))
+      return driverFilterNames.map(name => tmpDrivers.find(d => name===getFullDriverName(d)))
+    }
+  )()
 
   // $: {
   //   if(driverFilter) {
@@ -20,7 +40,6 @@
   //     fetchWikipediaImages(title).then(console.log)
   //   }
   // }
-  let driverFilter: DriverType | null = null
   $: driverFullName = driverFilter ? getFullDriverName(driverFilter) : ""
   $: getHoverText = (
     qualNum: number,
@@ -104,21 +123,30 @@
 </script>
 
 <main>
-  <section>
+  <section class="qualifying-to-results">
     <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
 
     <div>
       <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their fastest lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below!</p>
     </div>
-    <div>
+    <div class="filters">
       <Typeahead
+        bind:value={driverFilterValue}
         data={drivers}
         extract={getFullDriverName}
         label="Filter by Driver"
         limit={5}
-        on:select={e => driverFilter = e.detail.original}
-        on:clear={() => driverFilter = null}
+        on:select={e => setDriverFilters(e.detail.original)}
+        on:clear={() => setDriverFilters(null)}
       />
+
+      {#each driversForFilterButtons as d}
+        {#if d}
+          <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
+        {/if}
+      {/each}
+
+      
     </div>
 
     <hr/>
@@ -144,4 +172,21 @@
 </main>
 
 <style>
+  .filters {
+    display: flex;
+  }
+
+  .driver-filter-button {
+    margin-left: 1em;
+    margin-top: 1.5em;
+    background-color: transparent;
+    border-radius: 3px;
+    border: 1px solid gray;
+  }
+
+  :global(.qualifying-to-results [data-svelte-search] input) {
+    width: 200px;
+    display: block;
+    border-radius: 3px;
+  }
 </style>
