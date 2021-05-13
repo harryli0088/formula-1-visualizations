@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount } from "svelte"
   import parseCsvFile from './utils/parseCsvFile'
   import type {
     DriverType,
@@ -7,7 +7,10 @@
     RaceType,
     ResultType,
   } from './utils/types'
-  import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte";
+
+  import Loading from "./Components/Loading.svelte"
+  import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte"
+import arrayToObjectMap from "./utils/arrayToObjectMap";
 
 
   let drivers: DriverType[] = []
@@ -29,12 +32,11 @@
     results = result[3].filter(r => r.resultId?.length)
   })
 
+  $: isLoaded = drivers.length > 0
+
 
   //create an object that maps the race id to the race object
-  $: raceIdMap = races.reduce((acc,r) => {
-    acc[r.raceId] = r
-    return acc
-  }, {} as {[raceId: string]: RaceType})
+  $: raceIdMap = arrayToObjectMap(races, "raceId")
 
   //find the latest race
   //the accumulator in this case is the latest race or null
@@ -56,11 +58,13 @@
   />
 
   <footer>
-    {#if latestRace}
-      <hr/>
-      <div>Data last updated on {latestRace.date} at the {latestRace.name}</div>
-    {/if}
+    <p>Data provided by <a href="https://www.kaggle.com/rohanrao" target="_blank" rel="noopener noreferrer">Vopani</a> on <a href="https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020" target="_blank" rel="noopener noreferrer">Kaggle</a>. {#if latestRace} Last updated on {latestRace.date} at the {latestRace.name}. {/if}</p>
+    <p>Github Repo: <a href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">https://github.com/harryli0088/formula-one-visualizations</a></p>
   </footer>
+
+  {#if !isLoaded}
+    <Loading/>
+  {/if}
 </main>
 
 <style>
@@ -70,9 +74,5 @@
   :global(.svelte-typeahead-list) {
     margin: 0;
     z-index: 2;
-  }
-
-  footer {
-    padding: 1em;
   }
 </style>

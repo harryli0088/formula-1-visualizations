@@ -11,6 +11,7 @@
     resultNum: number,
     resultPosition: string,
   ) => string = (qualNum, qualPosition, resultNum, resultPosition) => ""
+  export let numericPositions: string[] = []
   export let possiblePositions: string[] = []
 
   $: matrix = distributionMaps.map((d,r) => //map over all the distributionMaps
@@ -25,7 +26,7 @@
     0
   )
   $: columns = processColumns(matrix,possiblePositions)
-  $: rows = processRows(matrix,possiblePositions)
+  $: rows = processRows(matrix,numericPositions)
   $: colorScale = scaleLinear().domain([0, Math.sqrt(maxMatrixValue)]).range(["white", "green"])
   $: colorFunction = (cell: CellDataType) => colorScale(Math.sqrt(cell.z)) || ""
 
@@ -40,7 +41,7 @@
 </script>
 
 <main>
-  <h3>Qualifying Position to Race Result Matrix</h3>
+  <h3>Qualifying vs Race Finish Positions</h3>
 	<Matrix
     {colorFunction}
     {columns}

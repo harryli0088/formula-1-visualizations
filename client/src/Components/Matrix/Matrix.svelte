@@ -94,7 +94,7 @@
       }
     }
 
-    return longestLength + textOffset;
+    return longestLength + textOffset + 5;
   }
 </script>
 

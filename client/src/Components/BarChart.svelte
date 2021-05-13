@@ -38,9 +38,8 @@
   $: rotatedWidth = rotated ? height: width
 
   $: paddingBottom = (
-    (rotated ? ctx.measureText(longestKey).width : textHeight)
+    (rotated ? ctx.measureText(longestKey).width + 10 : textHeight)
     + (xTitle ? textHeight : 0)
-    + 10
   )
   $: paddingLeft = (stackedTitle ? textHeight : 0)
   $: paddingTop = (rotated ? ctx.measureText(maxValue.toString()).width + 5 : textHeight)

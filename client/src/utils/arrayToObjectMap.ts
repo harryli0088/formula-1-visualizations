@@ -1,4 +1,4 @@
-export default function arrayToObjectMap(arr: any[], key: string) {
+export default function arrayToObjectMap(arr: {[identifier:string]: any}[], key: string) {
   return arr.reduce((acc, element) => {
     const identifier = element[key]
     if(acc[identifier] !== undefined) {

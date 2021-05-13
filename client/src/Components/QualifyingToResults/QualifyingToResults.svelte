@@ -50,6 +50,7 @@
     if(isNaN(parsedB)) return -1 //if b is not a number
     return parsedA - parsedB //else both are numbers, return the difference
   })
+  $: numericPositions = possiblePositions.filter(p => !isNaN(parseInt(p)))
 
   //create a default distribution map where each position has a value of 0
   //ie { 1: 0, 2: 0, 3: 0, ... "\N": 0 }
@@ -60,7 +61,7 @@
 
   //2d array of qualifyings, where each row is all the qualifyings corresponding to its respective position
   //qualifyingsForPositions[qualifyingIndex] = [qualifyings for the given qualifyingIndex]
-  $: qualifyingsForPositions = possiblePositions.map(p => filteredQualifying.filter(q => q.position === p))
+  $: qualifyingsForPositions = numericPositions.map(p => filteredQualifying.filter(q => q.position === p))
 
   //2d array of results, where each cell is the respective result of the originating qualifying
   //resultsForPositions[qualifyingIndex] = [results for the given qualifyingIndex]
@@ -88,40 +89,40 @@
 </script>
 
 <main>
-  <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
-  <div>
-    <Typeahead
-      data={drivers}
-      extract={getFullDriverName}
-      label="Filter by Driver"
-      limit={5}
-      on:select={e => driverFilter = e.detail.original}
-      on:clear={() => driverFilter = null}
-    />
-  </div>
+  <section>
+    <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
+    <div>
+      <Typeahead
+        data={drivers}
+        extract={getFullDriverName}
+        label="Filter by Driver"
+        limit={5}
+        on:select={e => driverFilter = e.detail.original}
+        on:clear={() => driverFilter = null}
+      />
+    </div>
 
-  <hr/>
+    <hr/>
 
-	<div>
     <QualToResBarChart
       {distributionMaps}
       {getHoverText}
+      {numericPositions}
       {possiblePositions}
       {resultsForPositions}
     />
 
+    <br/>
     <hr/>
 
     <QualToResMatrix
       {distributionMaps}
       {getHoverText}
+      {numericPositions}
       {possiblePositions}
     />
-  </div>
+  </section>
 </main>
 
 <style>
-  main {
-    padding: 1em;
-  }
 </style>

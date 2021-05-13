@@ -12,11 +12,19 @@
     resultNum: number,
     resultPosition: string,
   ) => string = (qualNum, qualPosition, resultNum, resultPosition) => ""
+  export let numericPositions: string[] = []
   export let possiblePositions: string[] = []
   export let resultsForPositions: ResultType[][] = []
 
 
   let qualifyingPositionFilterIndex:number = 0 //the current qualifying position to look at
+  $: {
+    //going from all drivers to a driver with a smaller spread of qualifying positions would make qualifyingPositionFilterIndex too big
+    //if it is too big, we want to set it back to 0
+    if(resultsForPositions[qualifyingPositionFilterIndex] === undefined) { //if the qualifying position filter is invalid
+      qualifyingPositionFilterIndex = 0 //set it to zero
+    }
+  }
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
   let rotated: boolean = false
   
@@ -27,7 +35,7 @@
     value: relevantDistributionMap[p] || 0
   }))
 
-  $: colorScale = scaleLinear().domain([possiblePositions[0], possiblePositions[possiblePositions.length-2]]).range(["green", "#E9F7EF"])
+  $: colorScale = scaleLinear().domain([numericPositions[0], numericPositions[numericPositions.length-1]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex] //get the bar chart result data being hovered over
@@ -37,7 +45,7 @@
   <h3>Race Results Given a Qualifying Position</h3>
 	<div>Qualifying Position:</div>
   <div class="positions-container">
-    {#each possiblePositions as p,i}
+    {#each numericPositions as p,i}
       <span class="position-option-container">
         <span
           class={`position-option ${qualifyingPositionFilterIndex===i ? "selected" : ""}`}
@@ -56,7 +64,7 @@
       {rotated}
       stackedTitle="Stacked Together"
       xTitle="Race Finish Position"
-      yTitle="Number of Finishes"
+      yTitle={`Number of Finishes (total ${filteredResults.length})`}
     />
     {#if resultPositionHover}
       <div>{getHoverText(filteredResults.length, possiblePositions[qualifyingPositionFilterIndex], resultPositionHover.value, resultPositionHover.key)}</div>
