@@ -72,30 +72,44 @@
 
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
-  //create an array of all the possible positions given the filtered results
-  $: possiblePositions = Array.from( //convert the Set into an Array
-    new Set( //create a new Set to get rid of duplicates
-      fitleredResults.map(r => r.position) //create an array of all the result positions
-    )
-  ).sort((a,b) => { //sort the positions so that the numbers come first, followed by "\N"
+
+  /**
+   * sort the positions so that the numbers come first, followed by "\N"
+   * @param a first position
+   * @param b second position
+   */
+  function sortPositions(a: string,b: string) {
     const parsedA = parseInt(a)
     const parsedB = parseInt(b)
     if(isNaN(parsedA)) return 1 //if a is not a number
     if(isNaN(parsedB)) return -1 //if b is not a number
     return parsedA - parsedB //else both are numbers, return the difference
-  })
-  $: numericPositions = possiblePositions.filter(p => !isNaN(parseInt(p)))
+  }
+  /**
+   * Given an array of qualifying or results data,
+   * return an array of unique and sorted positions
+   * @param data  qualifying or results data
+   */
+  function getPositions(data: (QualifyingType | ResultType)[]) {
+    return Array.from( //convert the Set into an Array
+      new Set( //create a new Set to get rid of duplicates
+        data.map(r => r.position).filter(p => p) //create an array of all the result positions that are valid
+      )
+    ).sort(sortPositions) //sort the positions
+  }
+  $: resultPositions = getPositions(fitleredResults) //array of positions from results
+  $: qualifyingPositions = getPositions(filteredQualifying) //array of positions from qualifying
 
   //create a default distribution map where each position has a value of 0
   //ie { 1: 0, 2: 0, 3: 0, ... "\N": 0 }
-  $: defaultDistributionMap = possiblePositions.reduce((acc, p) => {
+  $: defaultDistributionMap = resultPositions.reduce((acc, p) => {
     acc[p] = 0
     return acc
   }, {})
 
   //2d array of qualifyings, where each row is all the qualifyings corresponding to its respective position
   //qualifyingsForPositions[qualifyingIndex] = [qualifyings for the given qualifyingIndex]
-  $: qualifyingsForPositions = numericPositions.map(p => filteredQualifying.filter(q => q.position === p))
+  $: qualifyingsForPositions = qualifyingPositions.map(p => filteredQualifying.filter(q => q.position === p))
 
   //2d array of results, where each cell is the respective result of the originating qualifying
   //resultsForPositions[qualifyingIndex] = [results for the given qualifyingIndex]
@@ -154,8 +168,8 @@
     <QualToResBarChart
       {distributionMaps}
       {getHoverText}
-      {numericPositions}
-      {possiblePositions}
+      {qualifyingPositions}
+      {resultPositions}
       {resultsForPositions}
     />
 
@@ -165,8 +179,8 @@
     <QualToResMatrix
       {distributionMaps}
       {getHoverText}
-      {numericPositions}
-      {possiblePositions}
+      {qualifyingPositions}
+      {resultPositions}
     />
   </section>
 </main>

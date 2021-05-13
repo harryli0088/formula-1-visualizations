@@ -13,11 +13,11 @@
     resultNum: number,
     resultPosition: string,
   ) => string = (qualNum, qualPosition, resultNum, resultPosition) => ""
-  export let numericPositions: string[] = []
-  export let possiblePositions: string[] = []
+  export let qualifyingPositions: string[] = []
+  export let resultPositions: string[] = []
 
   $: matrix = distributionMaps.map((d,r) => //map over all the distributionMaps
-    possiblePositions.map((p, c) => { //map over all the possible result positions
+    resultPositions.map((p, c) => { //map over all the possible result positions
       const z = d[p] //get the count for this result position
       maxMatrixValue = Math.max(maxMatrixValue, z) //set the new max value if applicable
       return {c, r, z} //return the cell
@@ -27,8 +27,8 @@
     Math.max(acc, row.reduce((acc,cell) => Math.max(acc, cell.z), 0)),
     0
   )
-  $: columns = processColumns(matrix,possiblePositions.map(p => formatPosition(p)))
-  $: rows = processRows(matrix,numericPositions)
+  $: columns = processColumns(matrix,resultPositions.map(p => formatPosition(p)))
+  $: rows = processRows(matrix,qualifyingPositions)
   $: colorScale = scaleLinear().domain([0, Math.sqrt(maxMatrixValue)]).range(["white", "green"])
   $: colorFunction = (cell: CellDataType) => colorScale(Math.sqrt(cell.z)) || ""
 
@@ -55,7 +55,7 @@
   />
 
   {#if hoverCell}
-    <div>{getHoverText(rows[hoverCell.r].count, possiblePositions[hoverCell.r], hoverCell.z, columns[hoverCell.c].name)}</div>
+    <div>{getHoverText(rows[hoverCell.r].count, resultPositions[hoverCell.r], hoverCell.z, columns[hoverCell.c].name)}</div>
   {:else}
     Hover over the matrix to see more!
   {/if}

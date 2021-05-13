@@ -17,8 +17,8 @@
     resultNum: number,
     resultPosition: string,
   ) => string = (qualNum, qualPosition, resultNum, resultPosition) => ""
-  export let numericPositions: string[] = []
-  export let possiblePositions: string[] = []
+  export let qualifyingPositions: string[] = []
+  export let resultPositions: string[] = []
   export let resultsForPositions: ResultType[][] = []
 
 
@@ -26,7 +26,6 @@
   $: {
     //going from all drivers to a driver with a smaller spread of qualifying positions would make qualifyingPositionFilterIndex too big
     //if it is too big, we want to set it back to 0
-    //TODO try to find an index with data
     if(resultsForPositions[qualifyingPositionFilterIndex] === undefined) { //if the qualifying position filter is invalid
       qualifyingPositionFilterIndex = 0 //set it to zero
     }
@@ -36,12 +35,12 @@
   
   $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
-  $: data = possiblePositions.map(p => ({ //map over all the positions to make bar chart data
+  $: data = resultPositions.map(p => ({ //map over all the positions to make bar chart data
     key: formatPosition(p),
     value: relevantDistributionMap[p] || 0
   }))
 
-  $: colorScale = scaleLinear().domain([numericPositions[0], numericPositions[numericPositions.length-1]]).range(["green", "#E9F7EF"])
+  $: colorScale = scaleLinear().domain([qualifyingPositions[0], qualifyingPositions[qualifyingPositions.length-1]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex] //get the bar chart result data being hovered over
@@ -51,7 +50,7 @@
   <h3>Race Results Given a Qualifying Position</h3>
 	<div>Qualifying Position:</div>
   <div class="positions-container">
-    {#each numericPositions as p,i}
+    {#each qualifyingPositions as p,i}
       <span class="position-option-container">
         <span
           class={`position-option ${qualifyingPositionFilterIndex===i ? "selected" : ""}`}
@@ -73,7 +72,7 @@
       yTitle={`Number of Finishes (total ${filteredResults.length})`}
     />
     {#if resultPositionHover}
-      <div>{getHoverText(filteredResults.length, possiblePositions[qualifyingPositionFilterIndex], resultPositionHover.value, resultPositionHover.key)}</div>
+      <div>{getHoverText(filteredResults.length, resultPositions[qualifyingPositionFilterIndex], resultPositionHover.value, resultPositionHover.key)}</div>
     {:else}
       Hover over the chart to see more!
     {/if}
