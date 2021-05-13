@@ -2,6 +2,7 @@
   import Typeahead from "svelte-typeahead"
 
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
+  import getPositionsRange from "../../utils/getPositionsRange";
   import type { DriverType, QualifyingType, ResultType } from '../../utils/types'
 
   import QualToResBarChart from './QualToResBarChart.svelte'
@@ -73,32 +74,9 @@
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
-  /**
-   * sort the positions so that the numbers come first, followed by "\N"
-   * @param a first position
-   * @param b second position
-   */
-  function sortPositions(a: string,b: string) {
-    const parsedA = parseInt(a)
-    const parsedB = parseInt(b)
-    if(isNaN(parsedA)) return 1 //if a is not a number
-    if(isNaN(parsedB)) return -1 //if b is not a number
-    return parsedA - parsedB //else both are numbers, return the difference
-  }
-  /**
-   * Given an array of qualifying or results data,
-   * return an array of unique and sorted positions
-   * @param data  qualifying or results data
-   */
-  function getPositions(data: (QualifyingType | ResultType)[]) {
-    return Array.from( //convert the Set into an Array
-      new Set( //create a new Set to get rid of duplicates
-        data.map(r => r.position).filter(p => p) //create an array of all the result positions that are valid
-      )
-    ).sort(sortPositions) //sort the positions
-  }
-  $: resultPositions = getPositions(fitleredResults) //array of positions from results
-  $: qualifyingPositions = getPositions(filteredQualifying) //array of positions from qualifying
+  
+  $: resultPositions = getPositionsRange(fitleredResults) //array of positions from results
+  $: qualifyingPositions = getPositionsRange(filteredQualifying) //array of positions from qualifying
 
   //create a default distribution map where each position has a value of 0
   //ie { 1: 0, 2: 0, 3: 0, ... "\N": 0 }
