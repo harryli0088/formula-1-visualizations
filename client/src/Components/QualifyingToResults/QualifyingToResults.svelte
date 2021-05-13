@@ -100,6 +100,10 @@
 <main>
   <section>
     <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
+
+    <div>
+      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their fastest lap tops, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below!</p>
+    </div>
     <div>
       <Typeahead
         data={drivers}
