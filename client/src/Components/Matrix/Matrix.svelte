@@ -154,7 +154,7 @@
       </g>
     </svg>
 
-    <div style={`${height<effectiveHeight ? `max-height:${height};width:${effectiveWidth}` : ""};overflow-x:hidden;overflow-y:auto;`}>
+    <div style={`${height<effectiveHeight ? `width:${effectiveWidth}px` : ""};overflow-x:hidden;overflow-y:auto;`}>
       <svg width={effectiveWidth - (tooTall?SCROLLBAR_SIZE:0)} height={gridHeight}>
         <g transform={`translate(${horizontalTextSize})`}>
           {#each data as d,i}

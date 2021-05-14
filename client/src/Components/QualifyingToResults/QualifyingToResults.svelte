@@ -144,10 +144,10 @@
           <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
         {/each}
 
-        {#if driversForFilterButtons.length > 0}
-          <button class="clear-driver-filter-button" disabled={!driverFilterValue} on:click={() => setDriverFilters(null)}>
+        {#if driversForFilterButtons.length > 0 && driverFilterValue}
+          <span class="clear-driver-filter-button" on:click={() => setDriverFilters(null)}>
             <Icon icon={faTimes}/>
-          </button>
+          </span>
         {/if}
       </div>
     </div>
@@ -216,12 +216,10 @@
   }
 
   .clear-driver-filter-button {
-    border-radius: 50%;
-    height: 2em;
-    width: 2em;
+    cursor: pointer;
+    transition: 0.5s;
   }
-  :global(.clear-driver-filter-button svg) {
-    margin-top: 1px;
-    margin-bottom: 1px;
+  .clear-driver-filter-button:hover {
+    transform: scale(1.2);
   }
 </style>
