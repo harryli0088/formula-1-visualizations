@@ -32,6 +32,20 @@
   }
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
   let rotated: boolean = false
+
+  $: qualifyingPositionsFilterData = qualifyingPositions.map((position,i) => {
+    const disabled = resultsForPositions[i].length === 0
+    return {
+      disabled,
+      onClick: () => {
+        if(!disabled) {
+          qualifyingPositionFilterIndex = i
+        }
+      },
+      position,
+      selected: qualifyingPositionFilterIndex===i,
+    }
+  })
   
   $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
@@ -50,12 +64,16 @@
   <h3>Race Results Given a Qualifying Position</h3>
 	<div>Qualifying Position:</div>
   <div class="positions-container">
-    {#each qualifyingPositions as p,i}
+    {#each qualifyingPositionsFilterData as d}
       <span class="position-option-container">
         <span
-          class={`position-option ${qualifyingPositionFilterIndex===i ? "selected" : ""}`}
-          on:click={e => qualifyingPositionFilterIndex = i}
-        >{p}</span>
+          class={`position-option ${
+            d.selected ? "selected" : ""
+          }${
+            d.disabled ? "disabled" : ""
+          }`}
+          on:click={d.onClick}
+        >{d.position}</span>
       </span>
     {/each}
   </div>
@@ -112,5 +130,18 @@
     background-color: green;
     color: white;
     font-weight: bold;
+  }
+  .position-option.disabled {
+    user-select: none;
+    transform: none;
+    cursor: not-allowed;
+    border-color: #ddd;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      #ddd 4px,
+      #ddd 7px
+    );
   }
 </style>
