@@ -132,13 +132,13 @@
         on:clear={() => setDriverFilters(null)}
       />
 
-      {#each driversForFilterButtons as d}
-        {#if d}
-          <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
-        {/if}
-      {/each}
-
-      
+      <div class="driver-filter-buttons-container">
+        {#each driversForFilterButtons as d}
+          {#if d}
+            <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
+          {/if}
+        {/each}
+      </div>
     </div>
 
     <hr/>
@@ -166,19 +166,38 @@
 <style>
   .filters {
     display: flex;
+    flex-wrap: wrap;
   }
 
-  .driver-filter-button {
-    margin-left: 1em;
-    margin-top: 1.5em;
-    background-color: transparent;
-    border-radius: 3px;
-    border: 1px solid gray;
+  :global(.qualifying-to-results [data-svelte-search]) {
+    margin-right: 1em;
   }
 
   :global(.qualifying-to-results [data-svelte-search] input) {
     width: 200px;
     display: block;
     border-radius: 3px;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .filters {
+      display: block;
+    }
+
+    :global(.qualifying-to-results [data-svelte-search] input) {
+      width: 100%;
+    }
+  }
+
+  .driver-filter-buttons-container {
+    margin-top: 1.5em;
+  }
+
+  .driver-filter-button {
+    margin-right: 0.5em;
+    background-color: transparent;
+    border-radius: 3px;
+    border: 1px solid gray;
+    color: #555;
   }
 </style>
