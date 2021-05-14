@@ -1,5 +1,7 @@
 <script lang="ts">
   import Typeahead from "svelte-typeahead"
+  import Icon from 'fa-svelte'
+  import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import getPositionsRange from "../../utils/getPositionsRange";
@@ -29,9 +31,13 @@
   }
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}` //used for Typeahead
   $: driversForFilterButtons = (
-    () => {
-      const tmpDrivers = drivers.filter(d => driverFilterNames.includes(getFullDriverName(d)))
-      return driverFilterNames.map(name => tmpDrivers.find(d => name===getFullDriverName(d)))
+    ():DriverType[] => {
+      const unorderedDrivers = drivers.filter( //get the target drivers in an unordered array
+        d => driverFilterNames.includes(getFullDriverName(d))
+      )
+      return driverFilterNames.map(
+        name => unorderedDrivers.find(d => name===getFullDriverName(d)) //order the drivers
+      ).filter(d => d) //filter out any missing drivers
     }
   )()
 
@@ -134,10 +140,14 @@
 
       <div class="driver-filter-buttons-container">
         {#each driversForFilterButtons as d}
-          {#if d}
-            <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
-          {/if}
+          <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
         {/each}
+
+        {#if driversForFilterButtons.length > 0}
+          <button class="clear-driver-filter-button" disabled={!driverFilterValue} on:click={() => setDriverFilters(null)}>
+            <Icon icon={faTimes}/>
+          </button>
+        {/if}
       </div>
     </div>
 
@@ -191,6 +201,9 @@
 
   .driver-filter-buttons-container {
     margin-top: 1.5em;
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
   }
 
   .driver-filter-button {
@@ -199,5 +212,15 @@
     border-radius: 3px;
     border: 1px solid gray;
     color: #555;
+  }
+
+  .clear-driver-filter-button {
+    border-radius: 50%;
+    height: 2em;
+    width: 2em;
+  }
+  :global(.clear-driver-filter-button svg) {
+    margin-top: 1px;
+    margin-bottom: 1px;
   }
 </style>

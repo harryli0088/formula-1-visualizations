@@ -33,7 +33,7 @@
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
   let rotated: boolean = false
 
-  $: qualifyingPositionsFilterData = qualifyingPositions.map((position,i) => {
+  $: qualifyingPositionsFilterData = qualifyingPositions.map((position,i) => { //get meta data for qualifying position filters
     const disabled = resultsForPositions[i].length === 0
     return {
       disabled,
