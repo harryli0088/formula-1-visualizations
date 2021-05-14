@@ -14,6 +14,8 @@ body {
 	margin: 0;
 	box-sizing: border-box;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
+  width: 100vw;
 }
 
 label {
@@ -39,6 +41,7 @@ button {
 	color: #333;
 	background-color: #f4f4f4;
 	outline: none;
+  cursor: pointer;
 }
 
 button:disabled {
