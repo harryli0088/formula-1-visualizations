@@ -63,11 +63,10 @@
     return `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} ${resultPositionStr} a total of ${resultNum} times (${Math.ceil(100*resultNum/qualNum)}%)`
   }
 
-  //filter the qualifyings based on the driver
-  $: filteredQualifying = qualifying.filter(q => driverFilter===null || q.driverId === driverFilter.driverId)
 
-  //create an object that maps the qualifying id to the result
-  $: qualIdToResult = filteredQualifying.reduce((acc, q) => {
+  //create an object that maps all the qualifying ids to the respective result
+  //this is only run once when the qualifying data loads
+  $: qualIdToResult = qualifying.reduce((acc, q) => {
     acc[q.qualifyId] = results.find( //find and set the result
       r => ( //given the result
         q.raceId === r.raceId //must have the same race id
@@ -77,6 +76,8 @@
     return acc
   }, {} as {[qualifyId: string]: ResultType})
 
+  //filter the qualifyings based on the driver
+  $: filteredQualifying = qualifying.filter(q => driverFilter===null || q.driverId === driverFilter.driverId)
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
