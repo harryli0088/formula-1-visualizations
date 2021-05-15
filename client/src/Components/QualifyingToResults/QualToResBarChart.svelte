@@ -1,9 +1,10 @@
 <script lang="ts">
-  // import Icon from 'fa-svelte'
-  // import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons' //<Icon icon={faQuestionCircle}/>
+  import Icon from 'fa-svelte'
+  import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
   import { scaleLinear } from 'd3'
 
   import BarChart from "../BarChart.svelte"
+  import Popover from '../Popover.svelte'
   import type { DistributionMapType } from './types'
 
   import formatPosition from '../../utils/formatPosition'
@@ -30,6 +31,8 @@
       qualifyingPositionFilterIndex = 0 //set it to zero
     }
   }
+  $: popoverText = `Given all the drivers who qualified in position ${qualifyingPositions[qualifyingPositionFilterIndex]}, this chart plots the distribution of their race finishes.`
+
   let resultPositionHoverIndex:number = -1 //the current result index being hovered over
   let rotated: boolean = false
 
@@ -61,7 +64,13 @@
 </script>
 
 <main>
-  <h3>Race Results Given a Qualifying Position</h3>
+  <h3>
+    Race Results Given a Qualifying Position
+    <Popover content={popoverText}>
+      <Icon icon={faQuestionCircle}/>
+    </Popover>
+  </h3>
+
 	<div>Qualifying Position:</div>
   <div class="positions-container">
     {#each qualifyingPositionsFilterData as d}
