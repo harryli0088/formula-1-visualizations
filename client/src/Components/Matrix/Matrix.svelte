@@ -1,10 +1,9 @@
 <script lang="ts">
   import { range, scaleBand } from 'd3'
-import { identity } from 'svelte/internal'
   import ColGrid from "./ColGrid.svelte"
   import ColHeading from "./ColHeading.svelte"
   import Row from "./Row.svelte"
-  import type { CellDataType, HeadingType, OrdersType } from "./types"
+  import type { CellDataType, HeadingType } from "./types"
 
   const SCROLLBAR_SIZE = 17;
 

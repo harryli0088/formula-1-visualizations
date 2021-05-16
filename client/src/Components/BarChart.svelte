@@ -70,7 +70,11 @@
 
 <main>
   <div bind:clientWidth={width} style={`height: ${height}px`}>
-    <svg height={rotatedHeight} width={rotatedWidth} style={`margin-top: ${(rotatedWidth - width)/2}px; transform: rotate(${rotated?"90":"0"}deg)`}>
+    <svg 
+      height={rotatedHeight}
+      style={`margin-top: ${(rotatedWidth - width)/2}px; margin-left: ${Math.min((width - rotatedWidth)/2, 0)}px; transform: rotate(${rotated?"90":"0"}deg)`}
+      width={rotatedWidth}
+    >
       <g>
         {#each stackedData as d, i}
           <rect

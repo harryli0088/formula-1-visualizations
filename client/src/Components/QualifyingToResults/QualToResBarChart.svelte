@@ -61,6 +61,9 @@
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
   $: resultPositionHover = data[resultPositionHoverIndex] //get the bar chart result data being hovered over
+
+  let barChartContainerWidth: number = 0
+  $: allowRotateToggle = barChartContainerWidth >= 700
 </script>
 
 <main>
@@ -86,14 +89,16 @@
       </span>
     {/each}
   </div>
-  <div>Rotate Chart <input type="checkbox" bind:checked={rotated}/></div>
+  {#if allowRotateToggle}
+    <div>Rotate Chart <input type="checkbox" bind:checked={rotated}/></div>
+  {/if}
 
-  <div>
+  <div bind:clientWidth={barChartContainerWidth}>
     <BarChart
       bind:keyHoverIndex={resultPositionHoverIndex}
       {colorFunction}
       {data}
-      {rotated}
+      rotated={!allowRotateToggle || rotated}
       stackedTitle="Stacked Together"
       xTitle="Race Finish Position"
       yTitle={`Number of Finishes (total ${filteredResults.length})`}
