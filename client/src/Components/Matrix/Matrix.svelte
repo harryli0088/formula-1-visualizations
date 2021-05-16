@@ -1,5 +1,6 @@
 <script lang="ts">
   import { range, scaleBand } from 'd3'
+import { identity } from 'svelte/internal'
   import ColGrid from "./ColGrid.svelte"
   import ColHeading from "./ColHeading.svelte"
   import Row from "./Row.svelte"
@@ -18,7 +19,7 @@
   export let formatColHeading:(text: number, count: string) => string[] = (text, count) => [text, (count>0 ? `(${count})` : "")]
   export let formatRowHeading:(text: number, count: string) => string[] = (text, count) => [text, (count>0 ? `(${count})` : "")]
   export let gridLinesColor:string = "gray"
-  export let height:number = 500
+  export let height:number = 700
   export let linesHighlightedWidth:number = 3
   export let linesNotHighlightedWidth:number = 1
   export let minRectSize:number = 20
@@ -29,6 +30,8 @@
   export let onMouseOverHandler = (e, rowIndex, colIndex) => {}
   export let textOffset:number = 5
   export let transition:string = "1s"
+  export let xTitle:string = ""
+  export let yTitle:string = ""
 
   let mouseoverColIndex: number = -1
   let mouseoverRowIndex: number = -1
@@ -64,8 +67,11 @@
 
 
   //get text label lengths
-  $: horizontalTextSize = getTextSize(ctx, rows, formatRowHeading, textOffset);
-  $: verticalTextSize = getTextSize(ctx, columns, formatColHeading, textOffset);
+  const titleSize = 20
+  $: xTitleSize = (xTitle ? titleSize : 0)
+  $: yTitleSize = (yTitle ? titleSize : 0)
+  $: horizontalTextSize = getTextSize(ctx, rows, formatRowHeading, textOffset) + xTitleSize;
+  $: verticalTextSize = getTextSize(ctx, columns, formatColHeading, textOffset) + yTitleSize;
 
   $: minHeight = verticalTextSize + rows.length*minRectSize;
   $: effectiveHeight = Math.max(minHeight, height);
@@ -130,6 +136,9 @@
     style={`font: ${font}`}
   >
     <svg width={effectiveWidth} height={verticalTextSize}>
+      {#if yTitle}
+        <text x={horizontalTextSize + gridWidth/2} y={0} dy="1em" text-anchor="middle">{yTitle}</text>
+      {/if}
       <g transform={`translate(${horizontalTextSize}, ${verticalTextSize})`}>
         {#each columns as d, i}
           <ColHeading
@@ -144,6 +153,7 @@
             {transition}
             {verticalTextSize}
             {xScale}
+            {yTitleSize}
 
             {mouseover}
             {mouseoverColIndex}
@@ -156,6 +166,9 @@
 
     <div style={`${height<effectiveHeight ? `width:${effectiveWidth}px` : ""};overflow-x:hidden;overflow-y:auto;`}>
       <svg width={effectiveWidth - (tooTall?SCROLLBAR_SIZE:0)} height={gridHeight}>
+        {#if xTitle}
+          <text x={0} y={0} dy="1em" text-anchor="middle" transform={`translate(0,${gridHeight/2}) rotate(-90)`}>{xTitle}</text>
+        {/if}
         <g transform={`translate(${horizontalTextSize})`}>
           {#each data as d,i}
             <Row
@@ -178,6 +191,7 @@
               {textOffset}
               {transition}
               {xScale}
+              {xTitleSize}
               {yScale}
 
 

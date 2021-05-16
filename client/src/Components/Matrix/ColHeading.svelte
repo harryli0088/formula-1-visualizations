@@ -3,6 +3,7 @@
   export let data = {name: "", count: 0}
   export let defaultHighlight: boolean = false
   export let index: number = 0
+  export let isYTitle: boolean = false
   export let mouseover: Function = () => {}
   export let mouseoverColIndex: number = 0
   export let mouseoverRowIndex: number = 0
@@ -14,6 +15,7 @@
   export let transition: string = ""
   export let verticalTextSize: number = 0
   export let xScale: Function = () => {}
+  export let yTitleSize: number = 0
 
   $: formattedHeading = formatColHeading(data.name, data.count)
   $: fullName = data.name + " " + formattedHeading[1]
@@ -36,7 +38,7 @@
     {formattedHeading[0]}
   </text>
 
-  <text x={textOffset + verticalTextSize - 10} y={rectWidth/2} dy="0.32em" text-anchor="end">
+  <text x={textOffset + verticalTextSize - 10 - yTitleSize} y={rectWidth/2} dy="0.32em" text-anchor="end">
     <title>{fullName}</title>
     {formattedHeading[1]}
   </text>

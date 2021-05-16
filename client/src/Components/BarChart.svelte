@@ -126,7 +126,7 @@
         {/each}
       </g>
   
-      <text text-anchor="middle" x={0} y={0} transform={`translate(${rotatedWidth/2},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
+      <text text-anchor="middle" x={0} y={0} transform={`translate(${(chartLeftOffset + (rotatedWidth-chartLeftOffset)/2)},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
       <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
       <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={paddingLeft - 3}>{stackedTitle}</text>
     </svg>

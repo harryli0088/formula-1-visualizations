@@ -22,6 +22,7 @@
   export let textOffset: number = 0
   export let transition: string = ""
   export let xScale: Function = () => {}
+  export let xTitleSize: number = 0
   export let yScale: Function = () => {}
 
   $: formattedHeading = formatRowHeading(heading.name, heading.count)
@@ -84,7 +85,7 @@
     <text
       dy="0.35em"
       text-anchor="start"
-      x={10 - horizontalTextSize}
+      x={10 - horizontalTextSize + xTitleSize}
       y={0}
     >
       <title>{fullName}</title>

@@ -1,6 +1,10 @@
 <script lang="ts">
+  import Icon from 'fa-svelte'
+  import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
   import { scaleLinear } from 'd3'
+
   import Matrix, { processColumns, processRows } from "../Matrix/Matrix.svelte"
+  import Popover from '../Popover.svelte'
   import type { CellDataType } from '../Matrix/types';
   import type { DistributionMapType } from './types';
 
@@ -43,7 +47,12 @@
 </script>
 
 <main>
-  <h3>Qualifying vs Race Finish Positions</h3>
+  <h3>
+    Qualifying vs Race Finish Positions
+    <Popover content="This matrix plots all the qualifyings finishes (rows) with the actual race finish (columns)">
+      <Icon icon={faQuestionCircle}/>
+    </Popover>
+  </h3>
 	<Matrix
     {colorFunction}
     {columns}
@@ -52,6 +61,8 @@
     {onMouseOverHandler}
     orderBy="name"
     {rows}
+    xTitle="Qualifying Position"
+    yTitle="Race Finish Position"
   />
 
   {#if hoverCell}
