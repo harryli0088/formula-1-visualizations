@@ -11,6 +11,7 @@
   import QualToResMatrix from './QualToResMatrix.svelte'
 
   export let drivers: DriverType[] = []
+  export let latestRace: RaceType | null = null
   export let qualifying: QualifyingType[] = []
   export let results: ResultType[] = []
 
@@ -81,7 +82,7 @@
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
-  
+
   $: resultPositions = getPositionsRange(fitleredResults) //array of positions from results
   $: qualifyingPositions = getPositionsRange(filteredQualifying) //array of positions from qualifying
 
@@ -121,12 +122,20 @@
 
 </script>
 
-<main>
-  <section class="qualifying-to-results">
-    <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
+<main class="qualifying-to-results">
+  <header>
+    <div class="img-container">
+      <img src="redbull.jpg" alt="redbull"/>
+      <p>Photo from <a href="https://www.formula1.com/en/latest/article.tech-tuesday-why-red-bull-could-hit-the-ground-running-in-2020.4h5ZgPepX96WB0HsianTBT.html" target="_blank" rel="noopener noreferrer">Formula 1</a></p>
+    </div>
+    <div class="heading-text">
+      <h1>How do drivers' qualifying finishes correlate with their race results?</h1>
+    </div>
+  </header>
 
+  <section>
     <div>
-      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their best lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below!</p>
+      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their best lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
     </div>
     <div class="filters">
       <Typeahead
@@ -175,6 +184,46 @@
 </main>
 
 <style>
+  header {
+    background: #34495E;
+    min-height: 80vh;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header > * {
+    width: calc(50% - 0.5em);
+  }
+  @media only screen and (max-width: 800px) {
+    header {
+      flex-direction: column;
+      justify-content: center;
+    }
+    header > * {
+      width: 100%;
+    }
+
+  }
+
+  .img-container img {
+    width: 100%;
+  }
+  .img-container p {
+    font-style: italic;
+    font-size: 12px;
+    text-align: center;
+    color: #bbb;
+    letter-spacing: 1px;
+    margin-top: 0;
+  }
+
+  header h1 {
+    font-weight: normal;
+    letter-spacing: 1px;
+    font-size: 25px;
+  }
+
   .filters {
     display: flex;
     flex-wrap: wrap;
