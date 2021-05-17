@@ -11,7 +11,6 @@
   } from './utils/types'
   import parseCsvFile from './utils/parseCsvFile'
 
-  import Loading from "./Components/Loading.svelte"
   import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte"
 
 
@@ -36,9 +35,6 @@
     races = result[3]
     results = result[4].filter(r => r.resultId?.length)
   })
-
-  $: isLoaded = drivers.length > 0
-
 
   //create an object that maps the race id to the race object
   $: raceIdMap = arrayToObjectMap(races, "raceId")
@@ -72,9 +68,7 @@
     <p>Built using <a href="https://svelte.dev/" target="_blank" rel="noopener noreferrer">Svelte</a> and <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">Typescript</a></p>
   </footer>
 
-  {#if !isLoaded}
-    <Loading/>
-  {/if}
+  
 </main>
 
 <style>

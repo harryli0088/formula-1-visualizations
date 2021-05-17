@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Loading from "../Loading.svelte"
 
   import arrayToObjectMap from "../../utils/arrayToObjectMap"
   import type { CircuitType, DriverType, QualifyingType, RaceType, ResultType } from '../../utils/types'
@@ -129,46 +130,50 @@
 
   <section>
     <div>
-      <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their best lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
+      <p>To determine the starting lineup for each race, F1 currently runs a <b>qualifying</b> session on the day before, in which drivers compete to get the best lap times. Loosely, on the day of the race, drivers line up fastest to slowest based on their best qualifying lap times, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
     </div>
 
-    <TypeaheadFilters
-      data={circuits}
-      extract={getCircuitName}
-      filterButtons={circuitFilterButtons}
-      label="Filter by Circuit"
-      setFilter={setCircuitFilter}
-    />
+    {#if drivers.length === 0}
+      <Loading/>
+    {:else}
+      <TypeaheadFilters
+        data={circuits}
+        extract={getCircuitName}
+        filterButtons={circuitFilterButtons}
+        label="Filter by Circuit"
+        setFilter={setCircuitFilter}
+      />
 
-    <TypeaheadFilters
-      data={drivers}
-      extract={getFullDriverName}
-      filterButtons={[
-        "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
-      ]}
-      label="Filter by Driver"
-      setFilter={setDriverFilter}
-    />
+      <TypeaheadFilters
+        data={drivers}
+        extract={getFullDriverName}
+        filterButtons={[
+          "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
+        ]}
+        label="Filter by Driver"
+        setFilter={setDriverFilter}
+      />
 
-    <hr/>
+      <hr/>
 
-    <QualToResBarChart
-      {distributionMaps}
-      {getHoverText}
-      {qualifyingPositions}
-      {resultPositions}
-      {resultsForPositions}
-    />
+      <QualToResBarChart
+        {distributionMaps}
+        {getHoverText}
+        {qualifyingPositions}
+        {resultPositions}
+        {resultsForPositions}
+      />
 
-    <br/>
-    <hr/>
+      <br/>
+      <hr/>
 
-    <QualToResMatrix
-      {distributionMaps}
-      {getHoverText}
-      {qualifyingPositions}
-      {resultPositions}
-    />
+      <QualToResMatrix
+        {distributionMaps}
+        {getHoverText}
+        {qualifyingPositions}
+        {resultPositions}
+      />
+    {/if}
   </section>
 </main>
 

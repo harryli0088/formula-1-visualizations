@@ -1,16 +1,19 @@
+<script lang="ts">
+  export let color: string = "black"
+  export let heading: string = "Loading Data..."
+</script>
+
 <main>
-	<div class="loading-container">
+	<div class="loading-container" style={`color: ${color};`}>
     <div>
-      <div>
-        Loading Data...
-      </div>
+      <div>{heading}</div>
   
       <div class="spinner">
-        <div class="rect1"></div>
-        <div class="rect2"></div>
-        <div class="rect3"></div>
-        <div class="rect4"></div>
-        <div class="rect5"></div>
+        <div class="rect1" style={`background-color: ${color};`}></div>
+        <div class="rect2" style={`background-color: ${color};`}></div>
+        <div class="rect3" style={`background-color: ${color};`}></div>
+        <div class="rect4" style={`background-color: ${color};`}></div>
+        <div class="rect5" style={`background-color: ${color};`}></div>
       </div>
     </div>
   </div>
@@ -18,16 +21,9 @@
 
 <style>
   .loading-container {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0,0,0,0.5);
-    color: white;
     font-weight: bold;
   }
 
@@ -40,7 +36,6 @@
   }
 
   .spinner > div {
-    background-color: #eee;
     height: 100%;
     width: 4px;
     display: inline-block;
