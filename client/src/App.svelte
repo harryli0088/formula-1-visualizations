@@ -1,18 +1,21 @@
 <script lang="ts">
   import { onMount } from "svelte"
-  import parseCsvFile from './utils/parseCsvFile'
+
+  import arrayToObjectMap from "./utils/arrayToObjectMap"
   import type {
+    CircuitType,
     DriverType,
     QualifyingType,
     RaceType,
     ResultType,
   } from './utils/types'
+  import parseCsvFile from './utils/parseCsvFile'
 
   import Loading from "./Components/Loading.svelte"
   import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte"
-import arrayToObjectMap from "./utils/arrayToObjectMap";
 
 
+  let circuits: CircuitType[] = []
   let drivers: DriverType[] = []
   let qualifying: QualifyingType[] = []
   let races: RaceType[] = []
@@ -21,15 +24,17 @@ import arrayToObjectMap from "./utils/arrayToObjectMap";
   onMount(async () => {
     //load all the data
     const result = await Promise.all([
+      parseCsvFile('data/circuits.csv'),
       parseCsvFile('data/drivers.csv'),
       parseCsvFile('data/qualifying.csv'),
       parseCsvFile('data/races.csv'),
       parseCsvFile('data/results.csv'),
     ])
-    drivers = result[0]
-    qualifying = result[1]
-    races = result[2]
-    results = result[3].filter(r => r.resultId?.length)
+    circuits = result[0].filter(r => r.circuitId?.length)
+    drivers = result[1]
+    qualifying = result[2]
+    races = result[3]
+    results = result[4].filter(r => r.resultId?.length)
   })
 
   $: isLoaded = drivers.length > 0
@@ -52,9 +57,12 @@ import arrayToObjectMap from "./utils/arrayToObjectMap";
 
 <main>
 	<QualifyingToResults
+    {circuits}
     {drivers}
     {latestRace}
     {qualifying}
+    {raceIdMap}
+    {races}
     {results}
   />
 

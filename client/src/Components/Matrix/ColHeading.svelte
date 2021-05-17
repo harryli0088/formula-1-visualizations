@@ -3,7 +3,6 @@
   export let data = {name: "", count: 0}
   export let defaultHighlight: boolean = false
   export let index: number = 0
-  export let isYTitle: boolean = false
   export let mouseover: Function = () => {}
   export let mouseoverColIndex: number = 0
   export let mouseoverRowIndex: number = 0

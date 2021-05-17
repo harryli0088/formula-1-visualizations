@@ -1,46 +1,42 @@
 <script lang="ts">
-  import Typeahead from "svelte-typeahead"
-  import Icon from 'fa-svelte'
-  import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
+  import arrayToObjectMap from "../../utils/arrayToObjectMap"
+  import type { CircuitType, DriverType, QualifyingType, RaceType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import getPositionsRange from "../../utils/getPositionsRange";
-  import type { DriverType, QualifyingType, ResultType } from '../../utils/types'
+  import type { ObjectMapType } from "../../utils/arrayToObjectMap";
 
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
+  import TypeaheadFilters from "./TypeaheadFilters.svelte";
 
+
+  export let circuits: CircuitType[] = []
   export let drivers: DriverType[] = []
   export let latestRace: RaceType | null = null
   export let qualifying: QualifyingType[] = []
+  export let raceIdMap: ObjectMapType<RaceType> = {}
+  export let races: RaceType[] = []
   export let results: ResultType[] = []
 
+  $: circuitIdMap = arrayToObjectMap(circuits, "circuitId")
+
+  let circuitFilter: CircuitType | null = null
+  const getCircuitName = (circuit: CircuitType) => `${circuit.name}, ${circuit.country}`
+  const setCircuitFilter = (circuit: CircuitType | null) => circuitFilter = circuit
+  $: circuitFilterButtons = (() => {
+    const nowTime = new Date().getTime()
+    return races.filter(
+      r => new Date(r.date).getTime() - nowTime + 1.728e+8 > 0
+    ).sort(
+      (a: RaceType, b: RaceType) => a.date>b.date ? 1 : -1
+    ).slice(0,2).map(r => getCircuitName(circuitIdMap[r.circuitId]))
+  })()
+
   let driverFilter: DriverType | null = null
-  let driverFilterValue = ""
-  const driverFilterNames = [
-    "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
-  ]
-  function setDriverFilters(driver: DriverType | null) {
-    if(driver) {
-      driverFilter = driver
-      driverFilterValue = getFullDriverName(driver)
-    }
-    else {
-      driverFilter = null
-      driverFilterValue = ""
-    }
-  }
-  const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}` //used for Typeahead
-  $: driversForFilterButtons = (
-    ():DriverType[] => {
-      const unorderedDrivers = drivers.filter( //get the target drivers in an unordered array
-        d => driverFilterNames.includes(getFullDriverName(d))
-      )
-      return driverFilterNames.map(
-        name => unorderedDrivers.find(d => name===getFullDriverName(d)) //order the drivers
-      ).filter(d => d) //filter out any missing drivers
-    }
-  )()
+  const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}`
+  const setDriverFilter = (driver: DriverType | null) => driverFilter = driver
+
 
   // $: {
   //   if(driverFilter) {
@@ -78,7 +74,10 @@
   }, {} as {[qualifyId: string]: ResultType})
 
   //filter the qualifyings based on the driver
-  $: filteredQualifying = qualifying.filter(q => driverFilter===null || q.driverId === driverFilter.driverId)
+  $: filteredQualifying = qualifying.filter(q => (
+    (circuitFilter===null || raceIdMap[q.raceId]?.circuitId === circuitFilter.circuitId) //matching circuit
+    && (driverFilter===null || q.driverId === driverFilter.driverId) //matching driver
+  ))
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
@@ -137,29 +136,24 @@
     <div>
       <p>F1 currently runs a <b>qualifying</b> session on the Saturday before each Sunday race to determine the race's starting lineup. Loosely, based on their best lap times, the drivers line up fastest to slowest, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
     </div>
-    <div class="filters">
-      <Typeahead
-        bind:value={driverFilterValue}
-        data={drivers}
-        extract={getFullDriverName}
-        label="Filter by Driver"
-        limit={5}
-        on:select={e => setDriverFilters(e.detail.original)}
-        on:clear={() => setDriverFilters(null)}
-      />
 
-      <div class="driver-filter-buttons-container">
-        {#each driversForFilterButtons as d}
-          <button class="driver-filter-button" on:click={() => setDriverFilters(d)}>{getFullDriverName(d)}</button>
-        {/each}
+    <TypeaheadFilters
+      data={circuits}
+      extract={getCircuitName}
+      filterButtons={circuitFilterButtons}
+      label="Filter by Circuit"
+      setFilter={setCircuitFilter}
+    />
 
-        {#if driversForFilterButtons.length > 0 && driverFilterValue}
-          <span class="clear-driver-filter-button" on:click={() => setDriverFilters(null)}>
-            <Icon icon={faTimes}/>
-          </span>
-        {/if}
-      </div>
-    </div>
+    <TypeaheadFilters
+      data={drivers}
+      extract={getFullDriverName}
+      filterButtons={[
+        "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
+      ]}
+      label="Filter by Driver"
+      setFilter={setDriverFilter}
+    />
 
     <hr/>
 
@@ -222,53 +216,5 @@
     font-weight: normal;
     letter-spacing: 1px;
     font-size: 25px;
-  }
-
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  :global(.qualifying-to-results [data-svelte-search]) {
-    margin-right: 1em;
-  }
-
-  :global(.qualifying-to-results [data-svelte-search] input) {
-    width: 200px;
-    display: block;
-    border-radius: 3px;
-  }
-
-  @media only screen and (max-width: 600px) {
-    .filters {
-      display: block;
-    }
-
-    :global(.qualifying-to-results [data-svelte-search] input) {
-      width: 100%;
-    }
-  }
-
-  .driver-filter-buttons-container {
-    margin-top: 1.5em;
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .driver-filter-button {
-    margin-right: 0.5em;
-    background-color: transparent;
-    border-radius: 3px;
-    border: 1px solid gray;
-    color: #555;
-  }
-
-  .clear-driver-filter-button {
-    cursor: pointer;
-    transition: 0.5s;
-  }
-  .clear-driver-filter-button:hover {
-    transform: scale(1.2);
   }
 </style>

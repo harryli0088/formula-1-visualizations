@@ -2,6 +2,18 @@ export type ObjectMapType<T> = {
   [key:string]: T
 }
 
+export type CircuitType = {
+  alt: string,
+  circuitId: string,
+  circuitRef: string,
+  country: string,
+  lat: string,
+  lng: string,
+  location: string,
+  name: string,
+  url: string,
+}
+
 export type DriverType = {
   driverId: string,
   driverRef: string,
