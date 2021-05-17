@@ -21,9 +21,6 @@
   export let raceIdMap: ObjectMapType<RaceType> = {}
   export let races: RaceType[] = []
   export let results: ResultType[] = []
-  
-
-  $:(console.log(drivers))
 
   $: circuitIdMap = arrayToObjectMap(circuits, "circuitId")
 
@@ -148,7 +145,7 @@
         data={drivers}
         extract={getFullDriverName}
         filterButtons={[
-          "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Sergio Pérez"
+          "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Charles Leclerc"
         ]}
         label="Filter by Driver"
         setFilter={setDriverFilter}

@@ -1,5 +1,5 @@
-# F1 Analysis
-https://harryli0088.github.io/formula-one-visualizations/
+# Formula 1 Visualizations
+https://harryli0088.github.io/formula-1-visualizations/
 
 
 ## Getting Started
