@@ -9,6 +9,7 @@
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
   import TypeaheadFilters from "./TypeaheadFilters.svelte";
+import getNearbyRaces from "../../utils/getNearbyRaces";
 
 
   export let circuits: CircuitType[] = []
@@ -24,14 +25,7 @@
   let circuitFilter: CircuitType | null = null
   const getCircuitName = (circuit: CircuitType) => `${circuit.name}, ${circuit.country}`
   const setCircuitFilter = (circuit: CircuitType | null) => circuitFilter = circuit
-  $: circuitFilterButtons = (() => {
-    const nowTime = new Date().getTime()
-    return races.filter(
-      r => new Date(r.date).getTime() - nowTime + 1.728e+8 > 0
-    ).sort(
-      (a: RaceType, b: RaceType) => a.date>b.date ? 1 : -1
-    ).slice(0,2).map(r => getCircuitName(circuitIdMap[r.circuitId]))
-  })()
+  $: circuitFilterButtons = getNearbyRaces(races).map(r => getCircuitName(circuitIdMap[r.circuitId])) //map the race circuit ids to the circuits
 
   let driverFilter: DriverType | null = null
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}`

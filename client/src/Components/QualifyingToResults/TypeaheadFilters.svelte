@@ -24,12 +24,12 @@
 
   $: dataForFilterButtons = (
     ():T[] => {
-      const unordered = data.filter( //get the target drivers in an unordered array
+      const unordered = data.filter( //get the target data points in an unordered array
         d => filterButtons.includes(extract(d))
       )
       return filterButtons.map(
-        name => unordered.find(d => name===extract(d)) //order the drivers
-      ).filter(d => d) //filter out any missing drivers
+        name => unordered.find(d => name===extract(d)) //order the data points
+      ).filter(d => d) //filter out any missing data points
     }
   )()
 </script>

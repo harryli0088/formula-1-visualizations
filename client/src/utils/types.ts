@@ -1,7 +1,3 @@
-export type ObjectMapType<T> = {
-  [key:string]: T
-}
-
 export type CircuitType = {
   alt: string,
   circuitId: string,
