@@ -3,13 +3,14 @@
   import arrayToObjectMap from "../../utils/arrayToObjectMap"
   import type { CircuitType, DriverType, QualifyingType, RaceType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
-  import getPositionsRange from "../../utils/getPositionsRange";
-  import type { ObjectMapType } from "../../utils/arrayToObjectMap";
+  import getFilteredQualifyings from "../../utils/getFilteredQualifyings"
+  import getPositionsRange from "../../utils/getPositionsRange"
+  import type { ObjectMapType } from "../../utils/arrayToObjectMap"
+  import getNearbyRaces from "../../utils/getNearbyRaces"
 
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
-  import TypeaheadFilters from "./TypeaheadFilters.svelte";
-import getNearbyRaces from "../../utils/getNearbyRaces";
+  import TypeaheadFilters from "./TypeaheadFilters.svelte"
 
 
   export let circuits: CircuitType[] = []
@@ -19,6 +20,9 @@ import getNearbyRaces from "../../utils/getNearbyRaces";
   export let raceIdMap: ObjectMapType<RaceType> = {}
   export let races: RaceType[] = []
   export let results: ResultType[] = []
+  
+
+  $:(console.log(drivers))
 
   $: circuitIdMap = arrayToObjectMap(circuits, "circuitId")
 
@@ -68,10 +72,7 @@ import getNearbyRaces from "../../utils/getNearbyRaces";
   }, {} as {[qualifyId: string]: ResultType})
 
   //filter the qualifyings based on the driver
-  $: filteredQualifying = qualifying.filter(q => (
-    (circuitFilter===null || raceIdMap[q.raceId]?.circuitId === circuitFilter.circuitId) //matching circuit
-    && (driverFilter===null || q.driverId === driverFilter.driverId) //matching driver
-  ))
+  $: filteredQualifying = getFilteredQualifyings(qualifying, raceIdMap, circuitFilter, driverFilter)
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
