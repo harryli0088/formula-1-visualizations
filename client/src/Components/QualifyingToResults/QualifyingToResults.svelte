@@ -127,7 +127,7 @@
 
   <section>
     <div>
-      <p>To determine the starting lineup for each race, F1 currently runs a <b>qualifying</b> session on the day before, in which drivers compete to get the best lap times. Loosely, on the day of the race, drivers line up fastest to slowest based on their best qualifying lap times, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
+      <p>To determine the starting lineup for each race, F1 currently runs a <b>qualifying</b> session the day before, in which drivers compete to get the best lap times. Loosely, on the day of the race, drivers line up fastest to slowest based on their best qualifying lap times, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
     </div>
 
     {#if drivers.length === 0}

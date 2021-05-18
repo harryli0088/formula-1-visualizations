@@ -163,7 +163,7 @@
       </g>
     </svg>
 
-    <div style={`${height<effectiveHeight ? `width:${effectiveWidth}px` : ""};overflow-x:hidden;overflow-y:auto;`}>
+    <div style={`width:${effectiveWidth}px;overflow-x:hidden;overflow-y:auto;`}>
       <svg width={effectiveWidth - (tooTall?SCROLLBAR_SIZE:0)} height={gridHeight}>
         {#if xTitle}
           <text x={0} y={0} dy="1em" text-anchor="middle" transform={`translate(0,${gridHeight/2}) rotate(-90)`}>{xTitle}</text>

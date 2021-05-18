@@ -83,4 +83,8 @@
   :global(.popover-content) {
     background: white;
   }
+
+  main {
+    overflow-x: hidden;
+  }
 </style>
