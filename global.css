@@ -84,3 +84,44 @@ footer {
   background-color: #2C3E50;
   color: white;
 }
+
+
+header {
+  background: #34495E;
+  min-height: 500px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header > * {
+  width: calc(50% - 0.5em);
+}
+@media only screen and (max-width: 800px) {
+  header {
+    flex-direction: column;
+    justify-content: center;
+  }
+  header > * {
+    width: 100%;
+  }
+
+}
+
+header .img-container img {
+  width: 100%;
+}
+header .img-container p {
+  font-style: italic;
+  font-size: 12px;
+  text-align: center;
+  color: #bbb;
+  letter-spacing: 1px;
+  margin-top: 0;
+}
+
+header h1 {
+  font-weight: normal;
+  letter-spacing: 1px;
+  font-size: 25px;
+}
