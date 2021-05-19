@@ -33,7 +33,7 @@
 	
   <footer>
     <p>Data provided by <a href="https://www.kaggle.com/rohanrao" target="_blank" rel="noopener noreferrer">Vopani</a> on <a href="https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020" target="_blank" rel="noopener noreferrer">Kaggle</a>. {$latestRaceText}</p>
-    <p>Github Repo: <a href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">https://github.com/harryli0088/formula-one-visualizations</a></p>
+    <p>Have feedback? Open an issue in the <a href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">Github Repo</a>!</p>
     <p>Built using <a href="https://svelte.dev/" target="_blank" rel="noopener noreferrer">Svelte</a> and <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">Typescript</a></p>
   </footer>
 

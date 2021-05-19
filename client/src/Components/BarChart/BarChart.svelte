@@ -17,9 +17,8 @@
   export let hover: {labelIndex: number, keyIndex: number} = {labelIndex: -1, keyIndex: -1}
   export let rotated: boolean = false
   export let scale: "log" | "" = ""
-  export let showLabel: (label:string) => boolean = () => true
-  export let showLabelValue: (label: string, value: number, maxValue: number, minValue: number) => boolean 
-  = (label: string, value: number, maxValue: number, minValue: number) => value > 0
+  export let showLabel: (labelIndex:number) => boolean = () => true
+  export let showLabelValue: (labelIndex: number, value: number) => boolean = (labelIndex: number, value: number) => value > 0
   export let stackedTitle: string = ""
   export let xTitle: string = ""
   export let yTitle: string = ""
@@ -61,7 +60,7 @@
 
   //data calculations
   $: labels = scaledData.map(d => d.label)
-  $: longestLabel = labels.filter(showLabel).reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
+  $: longestLabel = labels.filter((l,i) => showLabel(i)).reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
   $: labelValues = scaledData.map(d => d.labelValue) //array of all labelValues
   $: maxDisplayValue = Math.max(...scaledData.map(d => d.labelDisplayValue))
   $: maxValue = Math.max(...labelValues)
@@ -174,7 +173,7 @@
             />
           {/each}
 
-          {#if showLabel(d.label)}
+          {#if showLabel(i)}
             <text
               class="key-label"
               dy={rotated ? "0.5em" : "1em"}
@@ -189,7 +188,7 @@
             >{d.label}</text>
           {/if}
 
-          {#if showLabelValue(d.label, d.labelValue, maxValue, minValue)}
+          {#if showLabelValue(i, d.labelValue)}
             <text
               class="value-label"
               text-anchor={rotated ? "start" : "middle"}

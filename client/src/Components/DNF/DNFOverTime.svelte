@@ -21,15 +21,28 @@
   export let colorFunction: (status: string) => string = () => "black"
   export let results: ResultType[] = []
 
-  const showLabel = (label: string) => parseInt(label) % 10 === 0
-  const showLabelValue = (label: string, value: number, maxValue: number, minValue: number) => value===minValue || value===maxValue
-
   let hover = {labelIndex: -1, keyIndex: -1}
 
   $: data = processStackedOverTimeData(results, $raceIdMap, $statusIdMap, didFinish)
+
   $: hoveredData = data[hover?.labelIndex]
   $: hoverSum = sum(hoveredData?.values || [])
   $: hoverValue = hoveredData?.values[hover?.keyIndex]
+
+  $: showLabel = (labelIndex: number) => parseInt(data[labelIndex].label) % 10 === 0
+
+  $: sums = data.map(d => sum(d.values)) //sum the values for each label
+  $: (
+    {minValue, showLabelValueAtIndex} = sums.reduce((acc, sum, i) => {
+      acc.minValue = Math.min(acc.minValue || sum, sum) //find the minimum sum
+
+      const prevValue = sums[i-1]
+      const nextValue = sums[i+1]
+      acc.showLabelValueAtIndex.push(sum>prevValue && sum>nextValue) //show the value label if it is a local maximum
+      return acc
+    }, {minValue: null, showLabelValueAtIndex: []})
+  )
+  $: showLabelValue = (labelIndex: number, value: number) => value===minValue || showLabelValueAtIndex[labelIndex]
 </script>
 
 <main>
@@ -66,7 +79,7 @@
     </p>
     
 
-    <p>1989 was a crazy year, in which many drivers Did Not Qualify or Pre-Qualify for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
+    <p>1989 was a crazy year, in which drivers Did Not Finish for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
   </section>
 </main>
 
