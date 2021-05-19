@@ -1,5 +1,7 @@
-import type { ObjectMapType } from "./arrayToObjectMap"
-import type { CircuitType, DriverType, QualifyingType, RaceType } from "./types"
+import type { ObjectMapType } from "../../utils/arrayToObjectMap"
+import isMatchingCircuit from "../../utils/isMatchingCircuit"
+import isMatchingDriver from "../../utils/isMatchingDriver"
+import type { CircuitType, DriverType, QualifyingType, RaceType } from "../../utils/types"
 
 /**
  * Return an array of filtered qualifyings given the circuit and driver filters
@@ -16,7 +18,7 @@ export default function getFilteredQualifyings(
   driverFilter: DriverType | null,
 ) {
   return qualifying.filter(q => (
-    (circuitFilter===null || raceIdMap[q.raceId]?.circuitId === circuitFilter.circuitId) //matching circuit
-    && (driverFilter===null || q.driverId === driverFilter.driverId) //matching driver
+    isMatchingCircuit(circuitFilter, raceIdMap[q.raceId]?.circuitId) //matching circuit
+    && isMatchingDriver(driverFilter, q.driverId) //matching driver
   ))
 }

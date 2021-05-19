@@ -1,9 +1,14 @@
 <script lang="ts">
-  import { latestRaceText, results, statusIdMap } from "../../stores/data"
+  import { latestRaceText, raceIdMap, results, statusIdMap } from "../../stores/data"
+
+  import CircuitsFilter from "../Filters/CircuitsFilter.svelte"
 
   import DNFDistribution from "./DNFDistribution.svelte"
   import DNFFinishesVsFailures from "./DNFFinishesVsFailures.svelte"
   import DNFOverTime from "./DNFOverTime.svelte"
+
+  import type { CircuitType } from "../../utils/types"
+  import isMatchingCircuit from "../../utils/isMatchingCircuit";
 
   const didFinish = (status: string) => status === "Finished" || status.indexOf("Lap") >= 0
   const colorFunction = (status: string) => {
@@ -13,10 +18,12 @@
     return "#E74C3C"
   }
 
-  let didFinishFilter = "all"
+  let circuitFilter: CircuitType | null = null
+  let didFinishFilter = null
 
   $: filteredResults = $results.filter(r => (
-    (didFinishFilter==="all" || didFinish(didFinishFilter)===didFinish($statusIdMap[r.statusId]?.status || ""))
+    (didFinishFilter===null || didFinish(didFinishFilter)===didFinish($statusIdMap[r.statusId]?.status || ""))
+    && isMatchingCircuit(circuitFilter, $raceIdMap[r.raceId]?.circuitId)
   ))
 </script>
 
@@ -37,11 +44,15 @@
     <div>
       <div class="radio-fitlers">
         <span><b>Show:</b></span>
-        <span class="radio-filter"><label for="all">All Results</label> <input id="all" type="radio" bind:group={didFinishFilter} value="all"/></span>
+        <span class="radio-filter"><label for="all">All Results</label> <input id="all" type="radio" bind:group={didFinishFilter} value={null}/></span>
         <span class="radio-filter"><label for="Finished">Only Finished Results</label> <input id="Finished" type="radio" bind:group={didFinishFilter} value="Finished"/></span>
         <span class="radio-filter"><label for="DNF">Only Did Not Finished Results</label> <input id="DNF" type="radio" bind:group={didFinishFilter} value="DNF"/></span>
       </div>
     </div>
+
+    <CircuitsFilter
+      bind:circuitFilter={circuitFilter}
+    />
 
     <hr/>
   </section>

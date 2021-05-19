@@ -3,7 +3,7 @@ import {
   DEFAULT_DRIVER,
   DEFAULT_QUALIFYING,
   DEFAULT_RACE
-} from "../testUtils"
+} from "../../../utils/testUtils"
 import getFilteredQualifyings from "../getFilteredQualifyings"
 
 test("can handle empty array", () => {

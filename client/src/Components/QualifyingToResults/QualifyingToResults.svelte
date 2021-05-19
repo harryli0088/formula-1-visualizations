@@ -1,36 +1,30 @@
 <script lang="ts">
   import Loading from "../Loading.svelte"
 
-  import arrayToObjectMap from "../../utils/arrayToObjectMap"
+
   import type { CircuitType, DriverType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import formatPercent from "../../utils/formatPercent"
-  import getFilteredQualifyings from "../../utils/getFilteredQualifyings"
   import getPositionsRange from "../../utils/getPositionsRange"
-  import getNearbyRaces from "../../utils/getNearbyRaces"
 
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
-  import TypeaheadFilters from "./TypeaheadFilters.svelte"
+
+  import CircuitsFilter from "../Filters/CircuitsFilter.svelte";
+  import TypeaheadFilters from "../Filters/TypeaheadFilters.svelte"
+
+  import getFilteredQualifyings from "./getFilteredQualifyings"
 
   import {
-    circuits,
     drivers,
     latestRace,
     qualifying,
     raceIdMap,
-    races,
     results,
   } from "../../stores/data"
 
-  $: circuitIdMap = arrayToObjectMap($circuits, "circuitId")
-  $: console.log($results)
-
 
   let circuitFilter: CircuitType | null = null
-  const getCircuitName = (circuit: CircuitType | null) => circuit ? `${circuit.name}, ${circuit.country}` : ""
-  const setCircuitFilter = (circuit: CircuitType | null) => circuitFilter = circuit
-  $: circuitFilterButtons = getNearbyRaces($races).map(r => getCircuitName(circuitIdMap[r.circuitId])) //map the race circuit ids to the circuits
 
   let driverFilter: DriverType | null = null
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}`
@@ -137,12 +131,8 @@
     {#if $drivers.length === 0 || $results.length === 0}
       <Loading/>
     {:else}
-      <TypeaheadFilters
-        data={$circuits}
-        extract={getCircuitName}
-        filterButtons={circuitFilterButtons}
-        label="Filter by Circuit"
-        setFilter={setCircuitFilter}
+      <CircuitsFilter
+        bind:circuitFilter={circuitFilter}
       />
 
       <TypeaheadFilters
