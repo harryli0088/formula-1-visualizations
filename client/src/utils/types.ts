@@ -65,3 +65,8 @@ export type ResultType = {
   fastestLapSpeed: string,
   statusId: string,
 }
+
+export type StatusType = {
+  status: string,
+  statusId: string,
+}

@@ -2,32 +2,34 @@
   import Loading from "../Loading.svelte"
 
   import arrayToObjectMap from "../../utils/arrayToObjectMap"
-  import type { CircuitType, DriverType, QualifyingType, RaceType, ResultType } from '../../utils/types'
+  import type { CircuitType, DriverType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import getFilteredQualifyings from "../../utils/getFilteredQualifyings"
   import getPositionsRange from "../../utils/getPositionsRange"
-  import type { ObjectMapType } from "../../utils/arrayToObjectMap"
   import getNearbyRaces from "../../utils/getNearbyRaces"
 
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
   import TypeaheadFilters from "./TypeaheadFilters.svelte"
 
+  import {
+    circuits,
+    drivers,
+    latestRace,
+    qualifying,
+    raceIdMap,
+    races,
+    results,
+  } from "../../stores/data"
 
-  export let circuits: CircuitType[] = []
-  export let drivers: DriverType[] = []
-  export let latestRace: RaceType | null = null
-  export let qualifying: QualifyingType[] = []
-  export let raceIdMap: ObjectMapType<RaceType> = {}
-  export let races: RaceType[] = []
-  export let results: ResultType[] = []
+  $: circuitIdMap = arrayToObjectMap($circuits, "circuitId")
+  $: console.log($results)
 
-  $: circuitIdMap = arrayToObjectMap(circuits, "circuitId")
 
   let circuitFilter: CircuitType | null = null
-  const getCircuitName = (circuit: CircuitType) => `${circuit.name}, ${circuit.country}`
+  const getCircuitName = (circuit: CircuitType | null) => circuit ? `${circuit.name}, ${circuit.country}` : ""
   const setCircuitFilter = (circuit: CircuitType | null) => circuitFilter = circuit
-  $: circuitFilterButtons = getNearbyRaces(races).map(r => getCircuitName(circuitIdMap[r.circuitId])) //map the race circuit ids to the circuits
+  $: circuitFilterButtons = getNearbyRaces($races).map(r => getCircuitName(circuitIdMap[r.circuitId])) //map the race circuit ids to the circuits
 
   let driverFilter: DriverType | null = null
   const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}`
@@ -59,8 +61,8 @@
 
   //create an object that maps all the qualifying ids to the respective result
   //this is only run once when the qualifying data loads
-  $: qualIdToResult = qualifying.reduce((acc, q) => {
-    acc[q.qualifyId] = results.find( //find and set the result
+  $: qualIdToResult = $qualifying.reduce((acc, q) => {
+    acc[q.qualifyId] = $results.find( //find and set the result
       r => ( //given the result
         q.raceId === r.raceId //must have the same race id
         && q.driverId === r.driverId //must have the same driver id
@@ -70,7 +72,7 @@
   }, {} as {[qualifyId: string]: ResultType})
 
   //filter the qualifyings based on the driver
-  $: filteredQualifying = getFilteredQualifyings(qualifying, raceIdMap, circuitFilter, driverFilter)
+  $: filteredQualifying = getFilteredQualifyings($qualifying, $raceIdMap, circuitFilter, driverFilter)
   $: fitleredResults = filteredQualifying.map(q => qualIdToResult[q.qualifyId]).filter(r => r)
 
 
@@ -94,11 +96,12 @@
   $: resultsForPositions = qualifyingsForPositions.map(
     qRow => qRow.map(
       q => qualIdToResult[q.qualifyId]
-    )
+    ).filter(r => r)
   )
 
   //array of distribution maps that sum the results for the given qualifying
   //distributionMaps[qualifyingIndex] = for the given qualifyingIndex, a key-value object { [position]: number of results that ended in this position  }
+  $: console.log("resultsForPositions",resultsForPositions)
   $: distributionMaps = resultsForPositions.map(
     filteredResults => filteredResults.reduce((acc, r) => {
       if(acc[r.position] === undefined) { //if this is an unexpected position
@@ -127,14 +130,14 @@
 
   <section>
     <div>
-      <p>To determine the starting lineup for each race, F1 currently runs a <b>qualifying</b> session the day before, in which drivers compete to get the best lap times. Loosely, on the day of the race, drivers line up fastest to slowest based on their best qualifying lap times, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if latestRace } (Up-to-date to the {latestRace.date} {latestRace.name}) {/if}</p>
+      <p>To determine the starting lineup for each race, F1 currently runs a <b>qualifying</b> session the day before, in which drivers compete to get the best lap times. Loosely, on the day of the race, drivers line up fastest to slowest based on their best qualifying lap times, with the fastest driver in front (aka "pole position"). During the actual race, of course, drivers constantly change positions, and the final race results are usually different from the initial lineup. Given a driver who qualified first, what are their chances of finishing the race first? Explore the data below! {#if $latestRace } (Up-to-date to the {$latestRace.date} {$latestRace.name}) {/if}</p>
     </div>
 
-    {#if drivers.length === 0}
+    {#if $drivers.length === 0 || $results.length === 0}
       <Loading/>
     {:else}
       <TypeaheadFilters
-        data={circuits}
+        data={$circuits}
         extract={getCircuitName}
         filterButtons={circuitFilterButtons}
         label="Filter by Circuit"
@@ -142,7 +145,7 @@
       />
 
       <TypeaheadFilters
-        data={drivers}
+        data={$drivers}
         extract={getFullDriverName}
         filterButtons={[
           "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Charles Leclerc"
@@ -175,43 +178,4 @@
 </main>
 
 <style>
-  header {
-    background: #34495E;
-    min-height: 80vh;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  header > * {
-    width: calc(50% - 0.5em);
-  }
-  @media only screen and (max-width: 800px) {
-    header {
-      flex-direction: column;
-      justify-content: center;
-    }
-    header > * {
-      width: 100%;
-    }
-
-  }
-
-  .img-container img {
-    width: 100%;
-  }
-  .img-container p {
-    font-style: italic;
-    font-size: 12px;
-    text-align: center;
-    color: #bbb;
-    letter-spacing: 1px;
-    margin-top: 0;
-  }
-
-  header h1 {
-    font-weight: normal;
-    letter-spacing: 1px;
-    font-size: 25px;
-  }
 </style>

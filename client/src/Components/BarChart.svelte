@@ -1,22 +1,20 @@
 <script lang="ts">
   import { scaleBand, scaleLinear } from 'd3'
 
-  type BarChartDataType = {
-    key: string,
-    value: number,
-  }
-
-  export let colorFunction: (value: any) => string = () => "black"
+  export let colorFunction: (key: string) => string = () => "black"
   export let data: BarChartDataType[] = []
+  export let font:string = "16px Arial"
   export let height: number = 500
   export let keyHoverIndex: number = -1
   export let rotated: boolean = false
+  export let scale: "log" | "" = ""
   export let stackedTitle: string = ""
   export let xTitle: string = ""
   export let yTitle: string = ""
 
   //constants
   const ctx = document.createElement('canvas').getContext("2d")
+  $: ctx.font = font
   const gap = 50
   const stackedBarsWidth = 25
   const textHeight = 20
@@ -42,12 +40,14 @@
     + (xTitle ? textHeight : 0)
   )
   $: paddingLeft = (stackedTitle ? textHeight : 0)
-  $: paddingTop = (rotated ? ctx.measureText(maxValue.toString()).width + 5 : textHeight)
+  $: paddingTop = (rotated ? ctx.measureText(maxValue.toString()).width + 10 : textHeight)
 
   $: effectiveBottom = rotatedHeight - paddingBottom
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
+  $: valueScale = scale==="log" ? (value: number) => Math.log(value + 1) : (value: number) => value
   $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
-  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
+  $: yScaleTmp = scaleLinear().domain([0, valueScale(maxValue)]).range([effectiveBottom, paddingTop])
+  $: yScale = (value: number) => yScaleTmp(valueScale(value))
   $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, paddingTop])
 
   $: barBandWidth = xScale.bandwidth()
@@ -66,6 +66,13 @@
     x: xScale(d.key),
     y: yScale(d.value),
   }))
+</script>
+
+<script context="module" lang="ts">
+  export type BarChartDataType = {
+    key: string,
+    value: number,
+  }
 </script>
 
 <main>
@@ -107,7 +114,7 @@
             fill={d.value > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
             transform={`
-              translate(${d.x + (rotated ? 0 : barBandWidth/2)},${effectiveBottom + (rotated ? 1 : 0)})
+              translate(${d.x + (rotated ? -2 : barBandWidth/2)},${effectiveBottom + (rotated ? 1 : 0)})
               rotate(${rotated?"-90":"0"})
             `}
             x={0}
