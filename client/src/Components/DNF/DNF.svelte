@@ -2,13 +2,15 @@
   import { latestRaceText, raceIdMap, results, statusIdMap } from "../../stores/data"
 
   import CircuitsFilter from "../Filters/CircuitsFilter.svelte"
+  import DriverFilter from "../Filters/DriverFilter.svelte"
 
   import DNFDistribution from "./DNFDistribution.svelte"
   import DNFFinishesVsFailures from "./DNFFinishesVsFailures.svelte"
   import DNFOverTime from "./DNFOverTime.svelte"
 
-  import type { CircuitType } from "../../utils/types"
-  import isMatchingCircuit from "../../utils/isMatchingCircuit";
+  import type { CircuitType, DriverType } from "../../utils/types"
+  import isMatchingCircuit from "../../utils/isMatchingCircuit"
+  import isMatchingDriver from "../../utils/isMatchingDriver"
 
   const didFinish = (status: string) => status === "Finished" || status.indexOf("Lap") >= 0
   const colorFunction = (status: string) => {
@@ -20,10 +22,12 @@
 
   let circuitFilter: CircuitType | null = null
   let didFinishFilter = null
+  let driverFilter: DriverType | null = null
 
   $: filteredResults = $results.filter(r => (
     (didFinishFilter===null || didFinish(didFinishFilter)===didFinish($statusIdMap[r.statusId]?.status || ""))
     && isMatchingCircuit(circuitFilter, $raceIdMap[r.raceId]?.circuitId)
+    && isMatchingDriver(driverFilter, r.driverId)
   ))
 </script>
 
@@ -50,10 +54,8 @@
       </div>
     </div>
 
-    <CircuitsFilter
-      bind:circuitFilter={circuitFilter}
-    />
-
+    <CircuitsFilter bind:circuitFilter={circuitFilter}/>
+    <DriverFilter bind:driverFilter={driverFilter}/>
     <hr/>
   </section>
 

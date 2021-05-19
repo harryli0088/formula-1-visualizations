@@ -27,6 +27,3 @@
   label="Filter by Circuit"
   setFilter={setCircuitFilter}
 />
-
-<style>
-</style>

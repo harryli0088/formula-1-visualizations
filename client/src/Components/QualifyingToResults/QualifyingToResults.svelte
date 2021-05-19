@@ -5,13 +5,14 @@
   import type { CircuitType, DriverType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
   import formatPercent from "../../utils/formatPercent"
+  import getFullDriverName from "../../utils/getFullDriverName";
   import getPositionsRange from "../../utils/getPositionsRange"
 
   import QualToResBarChart from './QualToResBarChart.svelte'
   import QualToResMatrix from './QualToResMatrix.svelte'
 
-  import CircuitsFilter from "../Filters/CircuitsFilter.svelte";
-  import TypeaheadFilters from "../Filters/TypeaheadFilters.svelte"
+  import DriverFilter from "../Filters/DriverFilter.svelte"
+  import CircuitsFilter from "../Filters/CircuitsFilter.svelte"
 
   import getFilteredQualifyings from "./getFilteredQualifyings"
 
@@ -25,10 +26,7 @@
 
 
   let circuitFilter: CircuitType | null = null
-
   let driverFilter: DriverType | null = null
-  const getFullDriverName = (d: DriverType) => `${d.forename} ${d.surname}`
-  const setDriverFilter = (driver: DriverType | null) => driverFilter = driver
 
 
   // $: {
@@ -131,19 +129,8 @@
     {#if $drivers.length === 0 || $results.length === 0}
       <Loading/>
     {:else}
-      <CircuitsFilter
-        bind:circuitFilter={circuitFilter}
-      />
-
-      <TypeaheadFilters
-        data={$drivers}
-        extract={getFullDriverName}
-        filterButtons={[
-          "Lewis Hamilton", "Max Verstappen", "Valtteri Bottas", "Lando Norris", "Charles Leclerc"
-        ]}
-        label="Filter by Driver"
-        setFilter={setDriverFilter}
-      />
+      <CircuitsFilter bind:circuitFilter={circuitFilter}/>
+      <DriverFilter bind:driverFilter={driverFilter}/>
 
       <hr/>
 
