@@ -1,4 +1,4 @@
-import { derived, writable } from 'svelte/store'
+import { derived, readable } from 'svelte/store'
 import arrayToObjectMap from '../utils/arrayToObjectMap'
 import parseCsvFile from '../utils/parseCsvFile'
 import type {
@@ -10,27 +10,27 @@ import type {
   StatusType
 } from '../utils/types'
 
-export const circuits = writable<CircuitType[]>([], function start(set) {
+export const circuits = readable<CircuitType[]>([], function start(set) {
   parseCsvFile('data/circuits.csv').then(set)
   return function stop() {}
 })
-export const drivers = writable<DriverType[]>([], function start(set) {
+export const drivers = readable<DriverType[]>([], function start(set) {
   parseCsvFile('data/drivers.csv').then(set)
   return function stop() {}
 })
-export const qualifying = writable<QualifyingType[]>([], function start(set) {
+export const qualifying = readable<QualifyingType[]>([], function start(set) {
   parseCsvFile('data/qualifying.csv').then(set)
   return function stop() {}
 })
-export const races = writable<RaceType[]>([], function start(set) {
+export const races = readable<RaceType[]>([], function start(set) {
   parseCsvFile('data/races.csv').then(set)
   return function stop() {}
 })
-export const results = writable<ResultType[]>([], function start(set) {
+export const results = readable<ResultType[]>([], function start(set) {
   parseCsvFile('data/results.csv').then(results => set(results.filter(r => r.resultId?.length)))
   return function stop() {}
 })
-export const statuses = writable<StatusType[]>([], function start(set) {
+export const statuses = readable<StatusType[]>([], function start(set) {
   parseCsvFile('data/status.csv').then(set)
   return function stop() {}
 })

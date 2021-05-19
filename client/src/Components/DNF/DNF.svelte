@@ -6,6 +6,7 @@
   import Loading from "../Loading.svelte"
   import Popover from "../Popover.svelte"
 
+  import processFinishVsFailureData from "./processFinishVsFailureData";
   import processStatusData from "./processStatusData"
 
   import {
@@ -13,10 +14,11 @@
     statusIdMap,
   } from "../../stores/data"
 
-  let logChecked: boolean = true
+  let logChecked: boolean = false
 
-  const colorFunction = (key: string) => {
-    if(key === "Finished" || key.indexOf("Lap")>=0) {
+  const didFinish = (status: string) => status === "Finished" || status.indexOf("Lap") >= 0
+  const colorFunction = (status: string) => {
+    if(didFinish(status)) {
       return "green"
     }
     return "#E74C3C"
@@ -24,13 +26,37 @@
 
   $: filteredResults = $results
 
-  $: statusBarChartData = processStatusData(filteredResults, $statusIdMap)
+  $: finishVsFailureBarChartData = processFinishVsFailureData(filteredResults, $statusIdMap, didFinish)
+
+  $: statusDistributionBarChartData = processStatusData(filteredResults, $statusIdMap)
 </script>
 
 <main>
   <section>
     <h3>
-      Distribution of Race Finishes (and Failures)
+      Race Finishes vs Failures
+      <Popover content="This bar chart shows how many drivers did and did not finish their races.">
+        <Icon icon={faQuestionCircle}/>
+      </Popover>
+    </h3>
+
+    {#if $results.length === 0}
+      <Loading/>
+    {:else}
+      <BarChart
+        {colorFunction}
+        data={finishVsFailureBarChartData}
+        height={500}
+        rotated
+        stackedTitle="Stacked Together"
+        xTitle="Finished vs Did Not Finish"
+        yTitle="Number of Race Results"
+      />
+    {/if}
+  </section>
+  <section>
+    <h3>
+      Distribution of Race Finishes and Failures
       <Popover content="This bar chart shows the distribution of race results in which drivers did and did not finish.">
         <Icon icon={faQuestionCircle}/>
       </Popover>
@@ -50,12 +76,12 @@
       </div>
     </div>
 
-    {#if results.length === 0}
+    {#if $results.length === 0}
       <Loading/>
     {:else}
       <BarChart
         {colorFunction}
-        data={statusBarChartData}
+        data={statusDistributionBarChartData}
         height={2000}
         rotated
         scale={logChecked ? "log" : ""}

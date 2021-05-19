@@ -23,12 +23,15 @@
     keyHoverIndex = index
   }
 
+  $: valueScale = scale==="log" ? (value: number) => Math.log(value + 1) : (value: number) => value
+  $: scaledData = data.map(d => ({...d, value: valueScale(d.value), displayValue: d.value}))
+
   //data calculations
-  $: keys = data.map(d => d.key)
+  $: keys = scaledData.map(d => d.key)
   $: longestKey = keys.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
-  $: values = data.map(d => d.value)
+  $: values = scaledData.map(d => d.value)
   $: maxValue = Math.max(...values)
-  $: sum = values.reduce((acc, v) => acc + v, 0)
+  $: maxDisplayValue = Math.max(...scaledData.map(d => d.displayValue))
 
   //pixel calculations
   let width = 500
@@ -40,26 +43,25 @@
     + (xTitle ? textHeight : 0)
   )
   $: paddingLeft = (stackedTitle ? textHeight : 0)
-  $: paddingTop = (rotated ? ctx.measureText(maxValue.toString()).width + 10 : textHeight)
+  $: paddingTop = (rotated ? ctx.measureText(maxDisplayValue.toString()).width + 10 : textHeight)
 
   $: effectiveBottom = rotatedHeight - paddingBottom
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
-  $: valueScale = scale==="log" ? (value: number) => Math.log(value + 1) : (value: number) => value
+  $: sum = values.reduce((acc, v) => acc + v, 0)
   $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
-  $: yScaleTmp = scaleLinear().domain([0, valueScale(maxValue)]).range([effectiveBottom, paddingTop])
-  $: yScale = (value: number) => yScaleTmp(valueScale(value))
-  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, paddingTop])
+  $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
+  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, paddingTop]) //need to log scale this
 
   $: barBandWidth = xScale.bandwidth()
 
-  $: stackedData = data.map(d => ({ ...d, lastSum: 0 }))
-  $: data.reduce((acc, d, i) => {
+  $: stackedData = scaledData.map(d => ({ ...d, lastSum: 0 }))
+  $: scaledData.reduce((acc, d, i) => { //calculate last sums
     stackedData[i].lastSum = acc
     acc += d.value
     return acc
   }, 0)
 
-  $: extendedData = data.map(d => ({
+  $: extendedData = scaledData.map(d => ({
     ...d,
     height: yScale(0) - yScale(d.value),
     width: barBandWidth,
@@ -110,11 +112,11 @@
           />
           <text
             class="key-label"
-            dy="1em"
+            dy={rotated ? "0.5em" : "1em"}
             fill={d.value > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
             transform={`
-              translate(${d.x + (rotated ? -2 : barBandWidth/2)},${effectiveBottom + (rotated ? 1 : 0)})
+              translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
               rotate(${rotated?"-90":"0"})
             `}
             x={0}
@@ -125,14 +127,14 @@
             <text
               class="value-label"
               text-anchor={rotated ? "start" : "middle"}
-              dy={rotated ? "1em" : 0}
+              dy={rotated ? "0.35em" : 0}
               transform={`
-                translate(${d.x + (rotated ? 0 : barBandWidth/2)},${d.y - 2})
+                translate(${d.x + barBandWidth/2},${d.y - 2})
                 rotate(${rotated?"-90":"0"})
               `}
               x={0}
               y={0}
-            >{d.value}</text>
+            >{d.displayValue}</text>
           {/if}
         {/each}
       </g>
