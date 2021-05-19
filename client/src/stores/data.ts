@@ -43,10 +43,7 @@ export const raceIdMap = derived(
 
 export const statusIdMap = derived(
 	statuses,
-	$statuses => {
-    console.log($statuses)
-    return arrayToObjectMap($statuses, "statusId")
-  },
+	$statuses => arrayToObjectMap($statuses, "statusId"),
   {}
 )
 
@@ -63,4 +60,9 @@ export const latestRace = derived(
     )
   }, null),
   null
+)
+
+export const latestRaceText = derived(
+  latestRace,
+  $latestRace => $latestRace ? `(Up-to-date to the ${$latestRace.date} ${$latestRace.name})` : ""
 )

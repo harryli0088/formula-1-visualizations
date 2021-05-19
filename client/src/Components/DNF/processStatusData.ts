@@ -24,7 +24,7 @@ export default function processStatusData(
   return Object.entries(statusCounts).map(
     (d):BarChartDataType => {
       //convert the entries array into an object
-      const label = statusIdMap[d[0]].status
+      const label = statusIdMap[d[0]]?.status || ""
       return {
         keys: [label],
         label, 

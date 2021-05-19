@@ -1,22 +1,38 @@
 <script lang="ts">
-  import Router from 'svelte-spa-router'
+  import { faGithub } from "@fortawesome/free-brands-svg-icons"
+  import Icon from 'fa-svelte'
+  import Router, {link} from 'svelte-spa-router'
 
-  import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte"
   import DNF from "./Components/DNF/DNF.svelte"
-  import { latestRace } from './stores/data'
+  import Landing from './Components/Landing.svelte';
+  import QualifyingToResults from "./Components/QualifyingToResults/QualifyingToResults.svelte"
+
+  import { latestRaceText } from './stores/data'
+  import ROUTES from './utils/routes';
 
 
   const routes = {
-    '/did-not-finish': DNF,
-    '/qualifying': QualifyingToResults,
+    [ROUTES.LANDING]: Landing,
+    [ROUTES.DNF]: DNF,
+    [ROUTES.QUALIFYING]: QualifyingToResults,
+    '*': Landing,
   }
 </script>
 
 <main>
+  <nav>
+    <section>
+      <a id="logo" use:link={ROUTES.LANDING}><h1>Formula 1 Visualizations</h1></a>
+        
+      <a id="github-icon" href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">
+        <Icon icon={faGithub}/>
+      </a>
+    </section>
+  </nav>
   <Router {routes}/>
 	
   <footer>
-    <p>Data provided by <a href="https://www.kaggle.com/rohanrao" target="_blank" rel="noopener noreferrer">Vopani</a> on <a href="https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020" target="_blank" rel="noopener noreferrer">Kaggle</a>. {#if $latestRace } (Up-to-date to the {$latestRace.date} {$latestRace.name}) {/if}</p>
+    <p>Data provided by <a href="https://www.kaggle.com/rohanrao" target="_blank" rel="noopener noreferrer">Vopani</a> on <a href="https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020" target="_blank" rel="noopener noreferrer">Kaggle</a>. {$latestRaceText}</p>
     <p>Github Repo: <a href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">https://github.com/harryli0088/formula-one-visualizations</a></p>
     <p>Built using <a href="https://svelte.dev/" target="_blank" rel="noopener noreferrer">Svelte</a> and <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">Typescript</a></p>
   </footer>
@@ -39,5 +55,30 @@
 
   main {
     overflow-x: hidden;
+  }
+
+  nav {
+    background: #222;
+    color: white;
+  }
+
+  nav section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #logo {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  #logo h1 {
+    margin: 0;
+  }
+
+  #github-icon {
+    color: inherit;
+    font-size: 2em;
   }
 </style>

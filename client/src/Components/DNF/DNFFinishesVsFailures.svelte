@@ -15,6 +15,7 @@
   export let colorFunction: (status: string) => string = () => "black"
   export let results: ResultType[] = []
 
+  let hover = {labelIndex: -1, keyIndex: -1}
 
   $: finishVsFailureBarChartData = processFinishVsFailureData(results, $statusIdMap, didFinish)
 
@@ -33,6 +34,7 @@
       <Loading/>
     {:else}
       <BarChart
+        bind:hover={hover}
         {colorFunction}
         data={finishVsFailureBarChartData}
         height={500}

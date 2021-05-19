@@ -4,6 +4,7 @@
   import arrayToObjectMap from "../../utils/arrayToObjectMap"
   import type { CircuitType, DriverType, ResultType } from '../../utils/types'
   import fetchWikipediaImages from "../../utils/fetchWikipediaImages"
+  import formatPercent from "../../utils/formatPercent"
   import getFilteredQualifyings from "../../utils/getFilteredQualifyings"
   import getPositionsRange from "../../utils/getPositionsRange"
   import getNearbyRaces from "../../utils/getNearbyRaces"
@@ -55,7 +56,7 @@
       : `finished the race in position ${resultPosition}`
     )
 
-    return `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} ${resultPositionStr} a total of ${resultNum} times (${Math.ceil(100*resultNum/qualNum)}%)`
+    return `Out of ${qualNum} qualifyings in position ${qualPosition}, ${driverFullName || "drivers"} ${resultPositionStr} a total of ${resultNum} times (${formatPercent(resultNum/qualNum)})`
   }
 
 

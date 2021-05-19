@@ -15,6 +15,7 @@
   export let colorFunction: (status: string) => string = () => "black"
   export let results: ResultType[] = []
 
+  let hover = {labelIndex: -1, keyIndex: -1}
   let logChecked: boolean = false
 
   $: statusDistributionBarChartData = processStatusData(results, $statusIdMap)
@@ -47,6 +48,7 @@
       <Loading/>
     {:else}
       <BarChart
+        bind:hover={hover}
         {colorFunction}
         data={statusDistributionBarChartData}
         height={2000}

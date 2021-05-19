@@ -9,12 +9,17 @@ export default function processFinishVsFailureData(
 ):BarChartDataType[] {
   return Object.entries(
     results.reduce((acc, r) => {
-      if(didFinish(statusIdMap[r.statusId].status)) { //if this result finished
-        acc.Finished++ //increment the finished count
+      const status = statusIdMap[r.statusId]?.status
+      
+      if(status) { //if our data is loaded
+        if(didFinish(status)) { //if this result finished
+          acc.Finished++ //increment the finished count
+        }
+        else {
+          acc.DNF++ //else increment the DNF count
+        }
       }
-      else {
-        acc.DNF++ //else increment the DNF count
-      }
+
       return acc
     }, {Finished: 0, DNF: 0})
   ).map(([key, value]) => ({

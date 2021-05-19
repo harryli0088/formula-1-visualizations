@@ -34,7 +34,7 @@
   }
   $: popoverText = `Given all the drivers who qualified in position ${qualifyingPositions[qualifyingPositionFilterIndex]}, this chart plots the distribution of their race finishes.`
 
-  let resultPositionHover = {labelIndex: -1, keyIndex: -1}
+  let hover = {labelIndex: -1, keyIndex: -1}
   let rotated: boolean = false
 
   $: qualifyingPositionsFilterData = qualifyingPositions.map((position,i) => { //get meta data for qualifying position filters
@@ -65,7 +65,7 @@
   $: colorScale = scaleLinear().domain([qualifyingPositions[0], qualifyingPositions[qualifyingPositions.length-1]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
-  $: hoveredResultData = data[resultPositionHover.labelIndex] //get the bar chart result data being hovered over
+  $: hoveredResultData = data[hover.labelIndex] //get the bar chart result data being hovered over
 
   let barChartContainerWidth: number = 0
   $: allowRotateToggle = barChartContainerWidth >= 700
@@ -100,7 +100,7 @@
 
   <div bind:clientWidth={barChartContainerWidth}>
     <BarChart
-      bind:hover={resultPositionHover}
+      bind:hover={hover}
       {colorFunction}
       {data}
       rotated={!allowRotateToggle || rotated}
@@ -109,7 +109,7 @@
       yTitle={`Number of Finishes (total ${filteredResults.length})`}
     />
     {#if hoveredResultData}
-      <div>{getHoverText(filteredResults.length, resultPositions[qualifyingPositionFilterIndex], hoveredResultData.values[resultPositionHover.keyIndex], hoveredResultData.keys[resultPositionHover.keyIndex])}</div>
+      <div>{getHoverText(filteredResults.length, resultPositions[qualifyingPositionFilterIndex], hoveredResultData.values[hover.keyIndex], hoveredResultData.keys[hover.keyIndex])}</div>
     {:else}
       Hover over the chart to see more!
     {/if}

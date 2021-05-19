@@ -12,15 +12,24 @@
     raceIdMap,
     statusIdMap,
   } from "../../stores/data"
+
+  import formatPercent from "../../utils/formatPercent";
   import type { ResultType } from "../../utils/types"
+  import sum from "../../utils/sum";
 
   export let didFinish: (status: string) => boolean = () => true
   export let colorFunction: (status: string) => string = () => "black"
   export let results: ResultType[] = []
 
-  $: stackedOverTimeBarChartData = processStackedOverTimeData(results, $raceIdMap, $statusIdMap, didFinish)
   const showLabel = (label: string) => parseInt(label) % 10 === 0
   const showLabelValue = (label: string, value: number, maxValue: number, minValue: number) => value===minValue || value===maxValue
+
+  let hover = {labelIndex: -1, keyIndex: -1}
+
+  $: data = processStackedOverTimeData(results, $raceIdMap, $statusIdMap, didFinish)
+  $: hoveredData = data[hover?.labelIndex]
+  $: hoverSum = sum(hoveredData?.values || [])
+  $: hoverValue = hoveredData?.values[hover?.keyIndex]
 </script>
 
 <main>
@@ -36,8 +45,9 @@
       <Loading/>
     {:else}
       <BarChart
+        bind:hover={hover}
         {colorFunction}
-        data={stackedOverTimeBarChartData}
+        {data}
         height={1000}
         showLabel={showLabel}
         showLabelValue={showLabelValue}
@@ -46,6 +56,15 @@
         yTitle="Number of Race Results"
       />
     {/if}
+
+    <p>
+      {#if hoveredData}
+        Out of {hoverSum} race results in {hoveredData.label}, there were {hoverValue} ({formatPercent(hoverValue/hoverSum)}) instances in which drivers {hoveredData.keys[hover.keyIndex]} their races.
+      {:else}
+        Hover over the chart to see more!
+      {/if}
+    </p>
+    
 
     <p>1989 was a crazy year, in which many drivers Did Not Qualify or Pre-Qualify for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
   </section>
