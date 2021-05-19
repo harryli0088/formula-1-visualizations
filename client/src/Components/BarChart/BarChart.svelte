@@ -2,13 +2,19 @@
   import { scaleBand, scaleLinear } from 'd3'
 
   import sum from "../../utils/sum"
-  import type { BarChartDataType } from './types';
+  import type {
+    BarChartDataType,
+    ExtendedBarChartDataType,
+    RectDataType,
+    ScaledBarChartDataType,
+    StackDataType
+  } from './types';
 
   export let colorFunction: (key: string) => string = () => "black"
   export let data: BarChartDataType[] = []
   export let font:string = "16px Arial"
   export let height: number = 500
-  export let keyHoverIndex: number = -1
+  export let hover: {labelIndex: number, keyIndex: number} = {labelIndex: -1, keyIndex: -1}
   export let rotated: boolean = false
   export let scale: "log" | "" = ""
   export let stackedTitle: string = ""
@@ -22,31 +28,41 @@
   const stackedBarsWidth = 25
   const textHeight = 20
 
-  function setKeyHoverIndex(index: number) {
-    keyHoverIndex = index
+  function setHover(labelIndex: number, keyIndex: number) {
+    hover = {labelIndex, keyIndex}
   }
 
   //scaling
   $: valueScale = scale==="log" ? (value: number) => Math.log(value + 1) : (value: number) => value
-  $: scaledData = data.map(d => {
-    const values = d.values.map(valueScale), //used for scale caluculations
+  $: scaledData = data.map((d): ScaledBarChartDataType => {
     const displayValues = d.values //used to display the label
+    const values = d.values.map(valueScale) //scale the values
+
+    //calculate last sums to determine where to draw values as rects
+    //for an index i, lastSum[i] is the sum of all previous values, values[0] to values[i-1]
+    const lastSums: number[] = [] //initialize an empty array
+    values.reduce((lastSum, v) => { //reduce the values
+      lastSums.push(lastSum) //push the last sum
+      return lastSum + v //return the next sum
+    }, 0)
+
     return {
-      ...d, 
-      values,
-      valuesSum: sum(values),
+      ...d,
       displayValues,
-      displayValuesSum: sum(displayValues),
+      labelDisplayValue: sum(displayValues), //the sum of all display values for this one label
+      labelValue: sum(values), //the sum of all the values for this one label
+      lastSums,
+      values,
     }
   })
 
   //data calculations
   $: labels = scaledData.map(d => d.label)
-  $: longestKey = labels.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
-  $: valuesSums = scaledData.map(d => d.valuesSum)
-  $: maxDisplayValue = Math.max(...scaledData.map(d => d.displayValuesSum))
-  $: maxValue = Math.max(...valuesSums)
-  $: totalValuesSum = valuesSums.reduce((acc, v) => acc + v, 0)
+  $: longestLabel = labels.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
+  $: labelValues = scaledData.map(d => d.labelValue) //array of all labelValues
+  $: maxDisplayValue = Math.max(...scaledData.map(d => d.labelDisplayValue))
+  $: maxValue = Math.max(...labelValues)
+  $: totalSum = labelValues.reduce((acc, v) => acc + v, 0) //total sum of all the values
 
   //pixel calculations
   let width = 500
@@ -54,7 +70,7 @@
   $: rotatedWidth = rotated ? height: width
 
   $: paddingBottom = (
-    (rotated ? ctx.measureText(longestKey).width + 10 : textHeight)
+    (rotated ? ctx.measureText(longestLabel).width + 10 : textHeight)
     + (xTitle ? textHeight : 0)
   )
   $: paddingLeft = (stackedTitle ? textHeight : 0)
@@ -64,24 +80,52 @@
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
   $: xScale = scaleBand().domain(labels).range([chartLeftOffset, rotatedWidth])
   $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
-  $: stackedScale = scaleLinear().domain([0, totalValuesSum || 0]).range([effectiveBottom, paddingTop]) //need to log scale this
+  $: stackedScale = scaleLinear().domain([0, totalSum || 0]).range([effectiveBottom, paddingTop])
 
   $: barBandWidth = xScale.bandwidth()
 
-  $: stackedData = scaledData.map(d => ({ ...d, lastSum: 0 }))
-  $: scaledData.reduce((acc, d, i) => { //calculate last sums
-    stackedData[i].lastSum = acc
-    acc += d.valuesSum
+  $: stackedData = scaledData.map( //iterate over all the labels
+    (d,i) => d.values.map( //iterate over all the values
+      (v,j): StackDataType => ({ //return a new object with all the necessary data for the stack
+        label: d.label,
+        labelIndex: i,
+        key: d.keys[j],
+        keyIndex: j,
+        value: v,
+        lastSum: 0, //to be calculated later
+      })
+    )
+  ).flat().sort((a,b) => b.value - a.value) //flatten and sort the values
+  $: stackedData.reduce((acc, d) => { //calculate last sums after flattening
+    d.lastSum = acc
+    acc += d.value
     return acc
   }, 0)
 
-  $: extendedData = scaledData.map(d => ({
-    ...d,
-    height: yScale(0) - yScale(d.valuesSum),
-    width: barBandWidth,
-    x: xScale(d.label),
-    y: yScale(d.valuesSum),
-  }))
+  $: extendedData = scaledData.map((d):ExtendedBarChartDataType => {
+    //calculate all the pixel data for each value
+    const pixelValues:RectDataType[] = d.values.map((v, i) => {
+      const lastSum = d.lastSums[i] //get the last sum
+
+      return {
+        height: yScale(0) - yScale(v),
+        width: barBandWidth,
+        x: xScale(d.label),
+        y: yScale(v + lastSum),
+      }
+    })
+
+    return {
+      ...d,
+      pixelValues,
+
+      //calculate overall pixel values for labels
+      height: yScale(0) - yScale(d.labelValue),
+      width: barBandWidth,
+      x: xScale(d.label),
+      y: yScale(d.labelValue),
+    }
+  })
 </script>
 
 <main>
@@ -92,35 +136,43 @@
       width={rotatedWidth}
     >
       <g>
-        {#each stackedData as d, i}
+        {#each stackedData as d}
           <rect
-            fill={colorFunction(d.label)}
-            height={stackedScale(totalValuesSum - d.valuesSum) - stackedScale(totalValuesSum)}
-            on:mouseover={e => setKeyHoverIndex(i)}
-            on:mouseout={e => setKeyHoverIndex(-1)}
-            opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
+            fill={colorFunction(d.key)}
+            height={stackedScale(totalSum - d.value) - stackedScale(totalSum)}
+            on:mouseover={e => setHover(d.labelIndex, d.keyIndex)}
+            on:mouseout={e => setHover(-1, -1)}
+            opacity={(
+              (hover.labelIndex===d.labelIndex && hover.keyIndex===d.keyIndex) || hover.labelIndex===-1
+              ? 1 : 0.5
+            )}
             width={stackedBarsWidth}
             x={paddingLeft}
-            y={stackedScale(d.valuesSum + d.lastSum)}
+            y={stackedScale(d.value + d.lastSum)}
           />
         {/each}
       </g>
       <g>
         {#each extendedData as d, i}
-          <rect 
-            fill={colorFunction(d.label)}
-            height={d.height}
-            on:mouseover={e => setKeyHoverIndex(i)}
-            on:mouseout={e => setKeyHoverIndex(-1)}
-            opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
-            width={d.width} 
-            x={d.x} 
-            y={d.y} 
-          />
+          {#each d.pixelValues as p, j}
+            <rect 
+              fill={colorFunction(d.keys[j])}
+              height={p.height}
+              on:mouseover={e => setHover(i,j)}
+              on:mouseout={e => setHover(-1,-1)}
+              opacity={(
+                (hover.labelIndex===i && hover.keyIndex===j) || hover.labelIndex===-1 
+                ? 1 : 0.5
+              )}
+              width={p.width} 
+              x={p.x} 
+              y={p.y} 
+            />
+          {/each}
           <text
             class="key-label"
             dy={rotated ? "0.5em" : "1em"}
-            fill={d.valuesSum > 0 ? "" : "#bbb"}
+            fill={d.labelValue > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
             transform={`
               translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
@@ -130,7 +182,7 @@
             y={0}
           >{d.label}</text>
 
-          {#if d.valuesSum > 0}
+          {#if d.labelValue > 0}
             <text
               class="value-label"
               text-anchor={rotated ? "start" : "middle"}
@@ -141,7 +193,7 @@
               `}
               x={0}
               y={0}
-            >{d.displayValuesSum}</text>
+            >{d.labelDisplayValue}</text>
           {/if}
         {/each}
       </g>

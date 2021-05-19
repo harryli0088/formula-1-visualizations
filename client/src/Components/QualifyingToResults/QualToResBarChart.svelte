@@ -9,7 +9,7 @@
 
   import formatPosition from '../../utils/formatPosition'
   import type { ResultType } from '../../utils/types'
-import type { BarChartDataType } from '../BarChart/types';
+  import type { BarChartDataType } from '../BarChart/types'
 
 
   export let distributionMaps:DistributionMapType[] = []
@@ -34,7 +34,7 @@ import type { BarChartDataType } from '../BarChart/types';
   }
   $: popoverText = `Given all the drivers who qualified in position ${qualifyingPositions[qualifyingPositionFilterIndex]}, this chart plots the distribution of their race finishes.`
 
-  let resultPositionHoverIndex:number = -1 //the current result index being hovered over
+  let resultPositionHover = {labelIndex: -1, keyIndex: -1}
   let rotated: boolean = false
 
   $: qualifyingPositionsFilterData = qualifyingPositions.map((position,i) => { //get meta data for qualifying position filters
@@ -65,7 +65,7 @@ import type { BarChartDataType } from '../BarChart/types';
   $: colorScale = scaleLinear().domain([qualifyingPositions[0], qualifyingPositions[qualifyingPositions.length-1]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"
 
-  $: resultPositionHover = data[resultPositionHoverIndex] //get the bar chart result data being hovered over
+  $: hoveredResultData = data[resultPositionHover.labelIndex] //get the bar chart result data being hovered over
 
   let barChartContainerWidth: number = 0
   $: allowRotateToggle = barChartContainerWidth >= 700
@@ -100,7 +100,7 @@ import type { BarChartDataType } from '../BarChart/types';
 
   <div bind:clientWidth={barChartContainerWidth}>
     <BarChart
-      bind:keyHoverIndex={resultPositionHoverIndex}
+      bind:hover={resultPositionHover}
       {colorFunction}
       {data}
       rotated={!allowRotateToggle || rotated}
@@ -108,8 +108,8 @@ import type { BarChartDataType } from '../BarChart/types';
       xTitle="Race Finish Position"
       yTitle={`Number of Finishes (total ${filteredResults.length})`}
     />
-    {#if resultPositionHover}
-      <div>{getHoverText(filteredResults.length, resultPositions[qualifyingPositionFilterIndex], resultPositionHover.value, resultPositionHover.key)}</div>
+    {#if hoveredResultData}
+      <div>{getHoverText(filteredResults.length, resultPositions[qualifyingPositionFilterIndex], hoveredResultData.values[resultPositionHover.keyIndex], hoveredResultData.keys[resultPositionHover.keyIndex])}</div>
     {:else}
       Hover over the chart to see more!
     {/if}

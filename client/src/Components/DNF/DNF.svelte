@@ -29,6 +29,12 @@
   $: finishVsFailureBarChartData = processFinishVsFailureData(filteredResults, $statusIdMap, didFinish)
 
   $: statusDistributionBarChartData = processStatusData(filteredResults, $statusIdMap)
+
+  const fakeStackedData = [
+    {keys: ["Finished", "DNF"], label: "2018", values: [20, 30]},
+    {keys: ["Finished", "DNF"], label: "2019", values: [15, 25]},
+    {keys: ["Finished", "DNF"], label: "2020", values: [43, 17]},
+  ]
 </script>
 
 <main>
@@ -43,6 +49,15 @@
     {#if $results.length === 0}
       <Loading/>
     {:else}
+      <BarChart
+        {colorFunction}
+        data={fakeStackedData}
+        height={500}
+        rotated
+        stackedTitle="Stacked Together"
+        xTitle="Finished vs Did Not Finish"
+        yTitle="Number of Race Results"
+      />
       <BarChart
         {colorFunction}
         data={finishVsFailureBarChartData}
