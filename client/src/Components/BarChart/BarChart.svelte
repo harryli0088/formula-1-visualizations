@@ -17,6 +17,9 @@
   export let hover: {labelIndex: number, keyIndex: number} = {labelIndex: -1, keyIndex: -1}
   export let rotated: boolean = false
   export let scale: "log" | "" = ""
+  export let showLabel: (label:string) => boolean = () => true
+  export let showLabelValue: (label: string, value: number, maxValue: number, minValue: number) => boolean 
+  = (label: string, value: number, maxValue: number, minValue: number) => value > 0
   export let stackedTitle: string = ""
   export let xTitle: string = ""
   export let yTitle: string = ""
@@ -58,10 +61,11 @@
 
   //data calculations
   $: labels = scaledData.map(d => d.label)
-  $: longestLabel = labels.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
+  $: longestLabel = labels.filter(showLabel).reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
   $: labelValues = scaledData.map(d => d.labelValue) //array of all labelValues
   $: maxDisplayValue = Math.max(...scaledData.map(d => d.labelDisplayValue))
   $: maxValue = Math.max(...labelValues)
+  $: minValue = Math.min(...labelValues)
   $: totalSum = labelValues.reduce((acc, v) => acc + v, 0) //total sum of all the values
 
   //pixel calculations
@@ -169,20 +173,23 @@
               y={p.y} 
             />
           {/each}
-          <text
-            class="key-label"
-            dy={rotated ? "0.5em" : "1em"}
-            fill={d.labelValue > 0 ? "" : "#bbb"}
-            text-anchor={rotated ? "end" : "middle"}
-            transform={`
-              translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
-              rotate(${rotated?"-90":"0"})
-            `}
-            x={0}
-            y={0}
-          >{d.label}</text>
 
-          {#if d.labelValue > 0}
+          {#if showLabel(d.label)}
+            <text
+              class="key-label"
+              dy={rotated ? "0.5em" : "1em"}
+              fill={d.labelValue > 0 ? "" : "#bbb"}
+              text-anchor={rotated ? "end" : "middle"}
+              transform={`
+                translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
+                rotate(${rotated?"-90":"0"})
+              `}
+              x={0}
+              y={0}
+            >{d.label}</text>
+          {/if}
+
+          {#if showLabelValue(d.label, d.labelValue, maxValue, minValue)}
             <text
               class="value-label"
               text-anchor={rotated ? "start" : "middle"}
