@@ -3,12 +3,13 @@
   import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
   import { scaleLinear } from 'd3'
 
-  import BarChart from "../BarChart.svelte"
+  import BarChart from "../BarChart/BarChart.svelte"
   import Popover from '../Popover.svelte'
   import type { DistributionMapType } from './types'
 
   import formatPosition from '../../utils/formatPosition'
   import type { ResultType } from '../../utils/types'
+import type { BarChartDataType } from '../BarChart/types';
 
 
   export let distributionMaps:DistributionMapType[] = []
@@ -52,10 +53,14 @@
   
   $: filteredResults = resultsForPositions[qualifyingPositionFilterIndex] || [] //get the results for this qualifying
   $: relevantDistributionMap = distributionMaps[qualifyingPositionFilterIndex] || {} //get the distribution map for this qualifying
-  $: data = resultPositions.map(p => ({ //map over all the positions to make bar chart data
-    key: formatPosition(p),
-    value: relevantDistributionMap[p] || 0
-  }))
+  $: data = resultPositions.map((p): BarChartDataType => {
+    const label = formatPosition(p)
+    return { //map over all the positions to make bar chart data
+      keys: [label],
+      label,
+      values: [relevantDistributionMap[p] || 0]
+    }
+  })
 
   $: colorScale = scaleLinear().domain([qualifyingPositions[0], qualifyingPositions[qualifyingPositions.length-1]]).range(["green", "#E9F7EF"])
   $: colorFunction = (position: string) => colorScale(position) || "gray"

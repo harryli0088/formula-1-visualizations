@@ -2,7 +2,7 @@
   import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons"
   import Icon from 'fa-svelte'
 
-  import BarChart from "../BarChart.svelte"
+  import BarChart from "../BarChart/BarChart.svelte"
   import Loading from "../Loading.svelte"
   import Popover from "../Popover.svelte"
 

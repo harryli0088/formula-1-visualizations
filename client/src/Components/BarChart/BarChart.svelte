@@ -1,6 +1,9 @@
 <script lang="ts">
   import { scaleBand, scaleLinear } from 'd3'
 
+  import sum from "../../utils/sum"
+  import type { BarChartDataType } from './types';
+
   export let colorFunction: (key: string) => string = () => "black"
   export let data: BarChartDataType[] = []
   export let font:string = "16px Arial"
@@ -23,15 +26,27 @@
     keyHoverIndex = index
   }
 
+  //scaling
   $: valueScale = scale==="log" ? (value: number) => Math.log(value + 1) : (value: number) => value
-  $: scaledData = data.map(d => ({...d, value: valueScale(d.value), displayValue: d.value}))
+  $: scaledData = data.map(d => {
+    const values = d.values.map(valueScale), //used for scale caluculations
+    const displayValues = d.values //used to display the label
+    return {
+      ...d, 
+      values,
+      valuesSum: sum(values),
+      displayValues,
+      displayValuesSum: sum(displayValues),
+    }
+  })
 
   //data calculations
-  $: keys = scaledData.map(d => d.key)
-  $: longestKey = keys.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
-  $: values = scaledData.map(d => d.value)
-  $: maxValue = Math.max(...values)
-  $: maxDisplayValue = Math.max(...scaledData.map(d => d.displayValue))
+  $: labels = scaledData.map(d => d.label)
+  $: longestKey = labels.reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
+  $: valuesSums = scaledData.map(d => d.valuesSum)
+  $: maxDisplayValue = Math.max(...scaledData.map(d => d.displayValuesSum))
+  $: maxValue = Math.max(...valuesSums)
+  $: totalValuesSum = valuesSums.reduce((acc, v) => acc + v, 0)
 
   //pixel calculations
   let width = 500
@@ -47,34 +62,26 @@
 
   $: effectiveBottom = rotatedHeight - paddingBottom
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
-  $: sum = values.reduce((acc, v) => acc + v, 0)
-  $: xScale = scaleBand().domain(keys).range([chartLeftOffset, rotatedWidth])
+  $: xScale = scaleBand().domain(labels).range([chartLeftOffset, rotatedWidth])
   $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
-  $: stackedScale = scaleLinear().domain([0, sum || 0]).range([effectiveBottom, paddingTop]) //need to log scale this
+  $: stackedScale = scaleLinear().domain([0, totalValuesSum || 0]).range([effectiveBottom, paddingTop]) //need to log scale this
 
   $: barBandWidth = xScale.bandwidth()
 
   $: stackedData = scaledData.map(d => ({ ...d, lastSum: 0 }))
   $: scaledData.reduce((acc, d, i) => { //calculate last sums
     stackedData[i].lastSum = acc
-    acc += d.value
+    acc += d.valuesSum
     return acc
   }, 0)
 
   $: extendedData = scaledData.map(d => ({
     ...d,
-    height: yScale(0) - yScale(d.value),
+    height: yScale(0) - yScale(d.valuesSum),
     width: barBandWidth,
-    x: xScale(d.key),
-    y: yScale(d.value),
+    x: xScale(d.label),
+    y: yScale(d.valuesSum),
   }))
-</script>
-
-<script context="module" lang="ts">
-  export type BarChartDataType = {
-    key: string,
-    value: number,
-  }
 </script>
 
 <main>
@@ -87,21 +94,21 @@
       <g>
         {#each stackedData as d, i}
           <rect
-            fill={colorFunction(d.key)}
-            height={stackedScale(sum - d.value) - stackedScale(sum)}
+            fill={colorFunction(d.label)}
+            height={stackedScale(totalValuesSum - d.valuesSum) - stackedScale(totalValuesSum)}
             on:mouseover={e => setKeyHoverIndex(i)}
             on:mouseout={e => setKeyHoverIndex(-1)}
             opacity={keyHoverIndex===i || keyHoverIndex===-1 ? 1 : 0.5}
             width={stackedBarsWidth}
             x={paddingLeft}
-            y={stackedScale(d.value + d.lastSum)}
+            y={stackedScale(d.valuesSum + d.lastSum)}
           />
         {/each}
       </g>
       <g>
         {#each extendedData as d, i}
           <rect 
-            fill={colorFunction(d.key)}
+            fill={colorFunction(d.label)}
             height={d.height}
             on:mouseover={e => setKeyHoverIndex(i)}
             on:mouseout={e => setKeyHoverIndex(-1)}
@@ -113,7 +120,7 @@
           <text
             class="key-label"
             dy={rotated ? "0.5em" : "1em"}
-            fill={d.value > 0 ? "" : "#bbb"}
+            fill={d.valuesSum > 0 ? "" : "#bbb"}
             text-anchor={rotated ? "end" : "middle"}
             transform={`
               translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
@@ -121,9 +128,9 @@
             `}
             x={0}
             y={0}
-          >{d.key}</text>
+          >{d.label}</text>
 
-          {#if d.value > 0}
+          {#if d.valuesSum > 0}
             <text
               class="value-label"
               text-anchor={rotated ? "start" : "middle"}
@@ -134,7 +141,7 @@
               `}
               x={0}
               y={0}
-            >{d.displayValue}</text>
+            >{d.displayValuesSum}</text>
           {/if}
         {/each}
       </g>

@@ -1,11 +1,12 @@
 import type { ObjectMapType } from "../../utils/arrayToObjectMap";
 import type { ResultType, StatusType } from "../../utils/types";
+import type { BarChartDataType } from "../BarChart/types";
 
 export default function processFinishVsFailureData(
   results: ResultType[],
   statusIdMap: ObjectMapType<StatusType>,
   didFinish: (status: string) => boolean,
-) {
+):BarChartDataType[] {
   return Object.entries(
     results.reduce((acc, r) => {
       if(didFinish(statusIdMap[r.statusId].status)) { //if this result finished
@@ -16,5 +17,9 @@ export default function processFinishVsFailureData(
       }
       return acc
     }, {Finished: 0, DNF: 0})
-  ).map(([key, value]) => ({key, value}))
+  ).map(([key, value]) => ({
+    keys: [key],
+    label: key,
+    values: [value],
+  }))
 }
