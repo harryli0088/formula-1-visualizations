@@ -46,41 +46,39 @@
 </script>
 
 <main>
-  <section>
-    <h3>
-      Race Finishes vs Failures
-      <Popover content="This bar chart shows how many drivers did and did not finish their races in each year.">
-        <Icon icon={faQuestionCircle}/>
-      </Popover>
-    </h3>
+  <h3>
+    Race Finishes vs Failures
+    <Popover content="This bar chart shows how many drivers did and did not finish their races in each year.">
+      <Icon icon={faQuestionCircle}/>
+    </Popover>
+  </h3>
 
-    {#if results.length === 0}
-      <Loading/>
+  {#if results.length === 0}
+    <Loading/>
+  {:else}
+    <BarChart
+      bind:hover={hover}
+      {colorFunction}
+      {data}
+      height={1000}
+      showLabel={showLabel}
+      showLabelValue={showLabelValue}
+      stackedTitle="Stacked Together"
+      xTitle="Finished vs Did Not Finish Over Time"
+      yTitle="Number of Race Results"
+    />
+  {/if}
+
+  <p>
+    {#if hoveredData}
+      Out of {hoverSum} race results in {hoveredData.label}, there were {hoverValue} ({formatPercent(hoverValue/hoverSum)}) instances in which drivers {hoveredData.keys[hover.keyIndex]} their races.
     {:else}
-      <BarChart
-        bind:hover={hover}
-        {colorFunction}
-        {data}
-        height={1000}
-        showLabel={showLabel}
-        showLabelValue={showLabelValue}
-        stackedTitle="Stacked Together"
-        xTitle="Finished vs Did Not Finish Over Time"
-        yTitle="Number of Race Results"
-      />
+      Hover over the chart to see more!
     {/if}
+  </p>
+  
 
-    <p>
-      {#if hoveredData}
-        Out of {hoverSum} race results in {hoveredData.label}, there were {hoverValue} ({formatPercent(hoverValue/hoverSum)}) instances in which drivers {hoveredData.keys[hover.keyIndex]} their races.
-      {:else}
-        Hover over the chart to see more!
-      {/if}
-    </p>
-    
-
-    <p>1989 was a crazy year, in which drivers Did Not Finish for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
-  </section>
+  <p>1989 seems like a crazy year, in that drivers Did Not Finish for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
 </main>
 
 <style>

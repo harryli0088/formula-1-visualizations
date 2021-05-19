@@ -22,29 +22,27 @@
 </script>
 
 <main>
-  <section>
-    <h3>
-      Race Finishes vs Failures
-      <Popover content="This bar chart shows how many drivers did and did not finish their races.">
-        <Icon icon={faQuestionCircle}/>
-      </Popover>
-    </h3>
+  <h3>
+    Race Finishes vs Failures
+    <Popover content="This bar chart shows how many drivers did and did not finish their races.">
+      <Icon icon={faQuestionCircle}/>
+    </Popover>
+  </h3>
 
-    {#if results.length === 0}
-      <Loading/>
-    {:else}
-      <BarChart
-        bind:hover={hover}
-        {colorFunction}
-        data={finishVsFailureBarChartData}
-        height={500}
-        rotated
-        stackedTitle="Stacked Together"
-        xTitle="Finished vs Did Not Finish"
-        yTitle="Number of Race Results"
-      />
-    {/if}
-  </section>
+  {#if results.length === 0}
+    <Loading/>
+  {:else}
+    <BarChart
+      bind:hover={hover}
+      {colorFunction}
+      data={finishVsFailureBarChartData}
+      height={500}
+      rotated
+      stackedTitle="Stacked Together"
+      xTitle="Finished vs Did Not Finish"
+      yTitle="Number of Race Results"
+    />
+  {/if}
 </main>
 
 <style>

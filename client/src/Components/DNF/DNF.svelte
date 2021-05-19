@@ -48,47 +48,68 @@
     <div>
       <div class="radio-fitlers">
         <span><b>Show:</b></span>
-        <span class="radio-filter"><label for="all">All Results</label> <input id="all" type="radio" bind:group={didFinishFilter} value={null}/></span>
-        <span class="radio-filter"><label for="Finished">Only Finished Results</label> <input id="Finished" type="radio" bind:group={didFinishFilter} value="Finished"/></span>
-        <span class="radio-filter"><label for="DNF">Only Did Not Finished Results</label> <input id="DNF" type="radio" bind:group={didFinishFilter} value="DNF"/></span>
+        <span class="radio-filter" style="background-color: gray"><input id="all" type="radio" bind:group={didFinishFilter} value={null}/> <label for="all">All Results</label></span>
+        <span class="radio-filter" style="background-color: green"><input id="Finished" type="radio" bind:group={didFinishFilter} value="Finished"/> <label for="Finished">Only Finished Results</label></span>
+        <span class="radio-filter" style="background-color: #E74C3C"><input id="DNF" type="radio" bind:group={didFinishFilter} value="DNF"/> <label for="DNF">Only Did Not Finished Results</label></span>
       </div>
     </div>
 
+    <br/>
+
     <CircuitsFilter bind:circuitFilter={circuitFilter}/>
     <DriverFilter bind:driverFilter={driverFilter}/>
+
     <hr/>
+
+    <DNFOverTime
+      {colorFunction}
+      {didFinish}
+      results={filteredResults}
+    />
+
+    <hr/>
+
+    <DNFFinishesVsFailures
+      {colorFunction}
+      {didFinish}
+      results={filteredResults}
+    />
+
+    <hr/>
+    
+    <DNFDistribution
+      {colorFunction}
+      results={filteredResults}
+    />
   </section>
-
-  <DNFOverTime
-    {colorFunction}
-    {didFinish}
-    results={filteredResults}
-  />
-
-  <DNFFinishesVsFailures
-    {colorFunction}
-    {didFinish}
-    results={filteredResults}
-  />
-  
-  <DNFDistribution
-    {colorFunction}
-    results={filteredResults}
-  />
 </main>
 
 <style>
   .radio-filter {
     cursor: pointer;
     margin-right: 1.5em;
+    padding: 0.5em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    color: white;
+    font-weight: bold;
+    border-radius: 3px;
+    transition: 0.5s;
+    display: inline-block;
   }
+  .radio-filter:hover {
+    transform: scale(1.05);
+  }
+  .radio-filter:active {
+    transform: scale(1);
+  }
+
   .radio-filter label {
     cursor: pointer;
     display: inline-block;
   }
   .radio-filter input {
     cursor: pointer;
-    margin-left: 0.25em;
     margin-bottom: 0;
   }
 </style>

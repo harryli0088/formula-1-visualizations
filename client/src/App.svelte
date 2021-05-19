@@ -41,8 +41,9 @@
 </main>
 
 <style>
-  :global([data-svelte-typeahead] label) {
-    font-size: 1em;
+  :global([data-svelte-typeahead] label, [data-svelte-search] label) {
+    font-size: 1em !important;
+    font-weight: bold;
   }
   :global(.svelte-typeahead-list) {
     margin: 0;
