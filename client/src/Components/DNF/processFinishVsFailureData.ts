@@ -16,12 +16,12 @@ export default function processFinishVsFailureData(
           acc.Finished++ //increment the finished count
         }
         else {
-          acc.DNF++ //else increment the DNF count
+          acc["Did Not Finish"]++ //else increment the DNF count
         }
       }
 
       return acc
-    }, {Finished: 0, DNF: 0})
+    }, {Finished: 0, "Did Not Finish": 0})
   ).map(([key, value]) => ({
     keys: [key],
     label: key,

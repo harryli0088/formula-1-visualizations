@@ -11,14 +11,35 @@
   import processStatusData from "./processStatusData"
 
   import type { ResultType } from "../../utils/types";
+  import sum from "../../utils/sum";
 
   export let colorFunction: (status: string) => string = () => "black"
+  export let didFinish: (status: string) => boolean = () => true
+  export let getHoverText: ( value: number, total: number, label: string, key: string, post: string ) => string = () => ""
   export let results: ResultType[] = []
 
-  let hover = {labelIndex: -1, keyIndex: -1}
   let logChecked: boolean = false
 
-  $: statusDistributionBarChartData = processStatusData(results, $statusIdMap)
+  $: data = processStatusData(results, $statusIdMap)
+
+  let hover = {labelIndex: -1, keyIndex: -1}
+  $: hoveredData = data[hover.labelIndex]
+  $: hoverDidFinish = didFinish(hoveredData?.keys[hover.keyIndex] || "")
+  $: hoverKey = hoveredData?.keys[hover.keyIndex]
+  $: hoverSum = sum(data.map(d => d.values).flat())
+  $: hoverValue = hoveredData?.values[hover?.keyIndex]
+  $: hoverPost = (
+    hoverKey==="Finished" ? "" : (
+      hoverDidFinish 
+      ? ` with ${hoverKey}`
+      : ` for reason: ${hoverKey}`
+    )
+  )
+  $: hoverText = (
+    hoveredData
+    ? getHoverText(hoverValue, hoverSum, "", hoverDidFinish ? "Finished" : "Did Not Finish", hoverPost)
+    : "Hover over the chart to see more!"
+  )
 </script>
 
 <main>
@@ -46,17 +67,21 @@
   {#if results.length === 0}
     <Loading/>
   {:else}
-    <BarChart
-      bind:hover={hover}
-      {colorFunction}
-      data={statusDistributionBarChartData}
-      height={2000}
-      rotated
-      scale={logChecked ? "log" : ""}
-      stackedTitle="Stacked Together"
-      xTitle="Statuses"
-      yTitle="Number of Races"
-    />
+    <div style="max-height: 500px; overflow-y: auto; overflow-x: hidden;">
+      <BarChart
+        bind:hover={hover}
+        {colorFunction}
+        {data}
+        height={2000}
+        rotated
+        scale={logChecked ? "log" : ""}
+        stackedTitle="Stacked Together"
+        xTitle="Statuses"
+        yTitle="Number of Races"
+      />
+    </div>
+
+    <p>{hoverText}</p>
   {/if}
 </main>
 

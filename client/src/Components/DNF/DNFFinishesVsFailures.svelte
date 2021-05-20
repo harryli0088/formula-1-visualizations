@@ -3,7 +3,10 @@
   import Icon from 'fa-svelte'
 
   import { statusIdMap } from "../../stores/data"
+
   import type { ResultType } from "../../utils/types"
+  import sum from "../../utils/sum";
+
 
   import BarChart from "../BarChart/BarChart.svelte"
   import Loading from "../Loading.svelte"
@@ -11,14 +14,22 @@
 
   import processFinishVsFailureData from "./processFinishVsFailureData"
 
-  export let didFinish: (status: string) => boolean = () => true
   export let colorFunction: (status: string) => string = () => "black"
+  export let didFinish: (status: string) => boolean = () => true
+  export let getHoverText: ( value: number, total: number, label: string, key: string ) => string = () => ""
   export let results: ResultType[] = []
 
+  $: data = processFinishVsFailureData(results, $statusIdMap, didFinish)
+
   let hover = {labelIndex: -1, keyIndex: -1}
-
-  $: finishVsFailureBarChartData = processFinishVsFailureData(results, $statusIdMap, didFinish)
-
+  $: hoveredData = data[hover.labelIndex]
+  $: hoverSum = sum(data.map(d => d.values).flat())
+  $: hoverValue = hoveredData?.values[hover?.keyIndex]
+  $: hoverText = (
+    hoveredData
+    ? getHoverText(hoverValue, hoverSum, "", hoveredData.keys[hover.keyIndex],"")
+    : "Hover over the chart to see more!"
+  )
 </script>
 
 <main>
@@ -35,13 +46,15 @@
     <BarChart
       bind:hover={hover}
       {colorFunction}
-      data={finishVsFailureBarChartData}
+      {data}
       height={500}
       rotated
       stackedTitle="Stacked Together"
       xTitle="Finished vs Did Not Finish"
       yTitle="Number of Race Results"
     />
+
+    <p>{hoverText}</p>
   {/if}
 </main>
 

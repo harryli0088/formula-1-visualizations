@@ -13,21 +13,17 @@
     statusIdMap,
   } from "../../stores/data"
 
-  import formatPercent from "../../utils/formatPercent";
   import type { ResultType } from "../../utils/types"
-  import sum from "../../utils/sum";
+  import sum from "../../utils/sum"
 
-  export let didFinish: (status: string) => boolean = () => true
   export let colorFunction: (status: string) => string = () => "black"
+  export let didFinish: (status: string) => boolean = () => true
+  export let getHoverText: ( value: number, total: number, label: string, key: string, post: string ) => string = () => ""
+  export let noFilters: boolean = true
   export let results: ResultType[] = []
 
-  let hover = {labelIndex: -1, keyIndex: -1}
 
   $: data = processStackedOverTimeData(results, $raceIdMap, $statusIdMap, didFinish)
-
-  $: hoveredData = data[hover?.labelIndex]
-  $: hoverSum = sum(hoveredData?.values || [])
-  $: hoverValue = hoveredData?.values[hover?.keyIndex]
 
   $: showLabel = (labelIndex: number) => parseInt(data[labelIndex].label) % 10 === 0
 
@@ -43,6 +39,17 @@
     }, {minValue: null, showLabelValueAtIndex: []})
   )
   $: showLabelValue = (labelIndex: number, value: number) => value===minValue || showLabelValueAtIndex[labelIndex]
+
+  let hover = {labelIndex: -1, keyIndex: -1}
+  $: hoveredData = data[hover?.labelIndex]
+  $: hoverKey = hoveredData?.keys[hover.keyIndex]
+  $: hoverSum = sum(hoveredData?.values || [])
+  $: hoverValue = hoveredData?.values[hover?.keyIndex]
+  $: hoverText = (
+    hoveredData
+    ? getHoverText(hoverValue, hoverSum, ` in ${hoveredData.label}`, hoverKey,"")
+    : "Hover over the chart to see more!"
+  )
 </script>
 
 <main>
@@ -69,16 +76,12 @@
     />
   {/if}
 
-  <p>
-    {#if hoveredData}
-      Out of {hoverSum} race results in {hoveredData.label}, there were {hoverValue} ({formatPercent(hoverValue/hoverSum)}) instances in which drivers {hoveredData.keys[hover.keyIndex]} their races.
-    {:else}
-      Hover over the chart to see more!
-    {/if}
-  </p>
+  <p>{hoverText}</p>
   
 
-  <p>1989 seems like a crazy year, in that drivers Did Not Finish for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
+  {#if noFilters}
+    <p>1989 seems like a crazy year, in that drivers Did Not Finish for many races. Check out the <a href="https://en.wikipedia.org/wiki/1989_Formula_One_World_Championship#Results_and_standings" target="_blank" rel="noopener noreferrer">Wikiepdia article</a>.</p>
+  {/if}
 </main>
 
 <style>

@@ -9,6 +9,9 @@
   import DNFOverTime from "./DNFOverTime.svelte"
 
   import type { CircuitType, DriverType } from "../../utils/types"
+  import formatPercent from "../../utils/formatPercent"
+  import getCircuitName from "../../utils/getCircuitName"
+  import getFullDriverName from "../../utils/getFullDriverName"
   import isMatchingCircuit from "../../utils/isMatchingCircuit"
   import isMatchingDriver from "../../utils/isMatchingDriver"
 
@@ -29,6 +32,14 @@
     && isMatchingCircuit(circuitFilter, $raceIdMap[r.raceId]?.circuitId)
     && isMatchingDriver(driverFilter, r.driverId)
   ))
+
+  $: getHoverText = (
+    value: number,
+    total: number,
+    label: string,
+    key: string,
+    post: string,
+  ) => `Out of ${total} race results${label || ""}${circuitFilter ? ` at ${getCircuitName(circuitFilter)}` : ""}, there were ${value} (${formatPercent(value/total)}) instances in which ${driverFilter ? getFullDriverName(driverFilter) : "drivers"} ${key} the race${post}.`
 </script>
 
 <main>
@@ -43,7 +54,7 @@
   </header>
 
   <section>
-    <p>During Formula 1 races, not every driver actually finishes the race. Accidents are the most obvious reason, but often the cars break down or the driver simply didn't qualify. How often do drivers not finish? Why do they not finish? Explore the visualizations below! {$latestRaceText}</p>
+    <p>During Formula 1 races, not every driver actually finishes the race. Accidents and crashes are the most obvious reasons, but often the cars break down or the driver simply didn't qualify. How often do drivers not finish? Why do they not finish? Explore the visualizations below! {$latestRaceText}</p>
 
     <div>
       <div class="radio-fitlers">
@@ -64,6 +75,8 @@
     <DNFOverTime
       {colorFunction}
       {didFinish}
+      {getHoverText}
+      noFilters={circuitFilter===null && driverFilter===null}
       results={filteredResults}
     />
 
@@ -72,6 +85,7 @@
     <DNFFinishesVsFailures
       {colorFunction}
       {didFinish}
+      {getHoverText}
       results={filteredResults}
     />
 
@@ -79,6 +93,8 @@
     
     <DNFDistribution
       {colorFunction}
+      {didFinish}
+      {getHoverText}
       results={filteredResults}
     />
   </section>
