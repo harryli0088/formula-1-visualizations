@@ -19,6 +19,9 @@
   export let getHoverText: ( value: number, total: number, label: string, key: string, post: string ) => string = () => ""
   export let results: ResultType[] = []
 
+  let width: number = 0
+  $: rotated = width > 700
+
   $: data = processFinishVsFailureData(results, $statusIdMap, didFinish)
 
   let hover = {labelIndex: -1, keyIndex: -1}
@@ -32,7 +35,7 @@
   )
 </script>
 
-<main>
+<main bind:clientWidth={width}>
   <h3>
     Race Finishes vs Failures
     <Popover content="This bar chart shows how many drivers did and did not finish their races.">
@@ -47,8 +50,8 @@
       bind:hover={hover}
       {colorFunction}
       {data}
-      height={500}
-      rotated
+      height={300}
+      {rotated}
       stackedTitle="Stacked Together"
       xTitle="Finished vs Did Not Finish"
       yTitle="Number of Race Results"

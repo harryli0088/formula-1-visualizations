@@ -22,6 +22,9 @@
   export let noFilters: boolean = true
   export let results: ResultType[] = []
 
+  let width: number = 0
+  $: rotated = width < 1000
+
 
   $: data = processStackedOverTimeData(results, $raceIdMap, $statusIdMap, didFinish)
 
@@ -52,7 +55,7 @@
   )
 </script>
 
-<main>
+<main bind:clientWidth={width}>
   <h3>
     Race Finishes vs Failures
     <Popover content="This bar chart shows how many drivers did and did not finish their races in each year.">
@@ -67,9 +70,12 @@
       bind:hover={hover}
       {colorFunction}
       {data}
-      height={1000}
+      height={rotated ? 1000 : 500}
+      maxHeight={500}
+      {rotated}
       showLabel={showLabel}
       showLabelValue={showLabelValue}
+      showXTicks
       stackedTitle="Stacked Together"
       xTitle="Finished vs Did Not Finish Over Time"
       yTitle="Number of Race Results"

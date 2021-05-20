@@ -67,19 +67,18 @@
   {#if results.length === 0}
     <Loading/>
   {:else}
-    <div style="max-height: 500px; overflow-y: auto; overflow-x: hidden;">
-      <BarChart
-        bind:hover={hover}
-        {colorFunction}
-        {data}
-        height={2000}
-        rotated
-        scale={logChecked ? "log" : ""}
-        stackedTitle="Stacked Together"
-        xTitle="Statuses"
-        yTitle="Number of Races"
-      />
-    </div>
+    <BarChart
+      bind:hover={hover}
+      {colorFunction}
+      {data}
+      height={2000}
+      rotated
+      maxHeight={500}
+      scale={logChecked ? "log" : ""}
+      stackedTitle="Stacked Together"
+      xTitle="Statuses"
+      yTitle="Number of Races"
+    />
 
     <p>{hoverText}</p>
   {/if}

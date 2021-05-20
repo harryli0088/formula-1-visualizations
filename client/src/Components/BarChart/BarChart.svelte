@@ -13,12 +13,15 @@
   export let colorFunction: (key: string) => string = () => "black"
   export let data: BarChartDataType[] = []
   export let font:string = "16px Arial"
+  export let formatLabel: (label:string) => string = (label:string) => label
   export let height: number = 500
   export let hover: {labelIndex: number, keyIndex: number} = {labelIndex: -1, keyIndex: -1}
+  export let maxHeight: number | null = null
   export let rotated: boolean = false
   export let scale: "log" | "" = ""
   export let showLabel: (labelIndex:number) => boolean = () => true
   export let showLabelValue: (labelIndex: number, value: number) => boolean = (labelIndex: number, value: number) => value > 0
+  export let showXTicks: boolean = false
   export let stackedTitle: string = ""
   export let xTitle: string = ""
   export let yTitle: string = ""
@@ -29,6 +32,7 @@
   const gap = 50
   const stackedBarsWidth = 25
   const textHeight = 20
+  const tickSize = 5
 
   function setHover(labelIndex: number, keyIndex: number) {
     hover = {labelIndex, keyIndex}
@@ -60,7 +64,7 @@
 
   //data calculations
   $: labels = scaledData.map(d => d.label)
-  $: longestLabel = labels.filter((l,i) => showLabel(i)).reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
+  $: longestLabel = labels.filter((l,i) => showLabel(i)).map(formatLabel).reduce( (acc, k) => acc.length > k.length ? acc : k, "" )
   $: labelValues = scaledData.map(d => d.labelValue) //array of all labelValues
   $: maxDisplayValue = Math.max(...scaledData.map(d => d.labelDisplayValue))
   $: maxValue = Math.max(...labelValues)
@@ -79,7 +83,8 @@
   $: paddingLeft = (stackedTitle ? textHeight : 0)
   $: paddingTop = (rotated ? ctx.measureText(maxDisplayValue.toString()).width + 10 : textHeight)
 
-  $: effectiveBottom = rotatedHeight - paddingBottom
+  $: xTickOffset = (showXTicks ? tickSize : 0)
+  $: effectiveBottom = rotatedHeight - paddingBottom - xTickOffset
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
   $: xScale = scaleBand().domain(labels).range([chartLeftOffset, rotatedWidth])
   $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
@@ -129,85 +134,103 @@
       y: yScale(d.labelValue),
     }
   })
+
+  $: overflowStyle = (
+    maxHeight > 0
+    ? `max-height: ${maxHeight}px; overflow-y: auto; overflow-x: hidden;`
+    : "" 
+  )
 </script>
 
 <main>
-  <div bind:clientWidth={width} style={`height: ${height}px`}>
-    <svg 
-      height={rotatedHeight}
-      style={`margin-top: ${(rotatedWidth - width)/2}px; margin-left: ${Math.min((width - rotatedWidth)/2, 0)}px; transform: rotate(${rotated?"90":"0"}deg)`}
-      width={rotatedWidth}
-    >
-      <g>
-        {#each stackedData as d}
-          <rect
-            fill={colorFunction(d.key)}
-            height={stackedScale(totalSum - d.value) - stackedScale(totalSum)}
-            on:mouseover={e => setHover(d.labelIndex, d.keyIndex)}
-            on:mouseout={e => setHover(-1, -1)}
-            opacity={(
-              (hover.labelIndex===d.labelIndex && hover.keyIndex===d.keyIndex) || hover.labelIndex===-1
-              ? 1 : 0.5
-            )}
-            width={stackedBarsWidth}
-            x={paddingLeft}
-            y={stackedScale(d.value + d.lastSum)}
-          />
-        {/each}
-      </g>
-      <g>
-        {#each extendedData as d, i}
-          {#each d.pixelValues as p, j}
-            <rect 
-              fill={colorFunction(d.keys[j])}
-              height={p.height}
-              on:mouseover={e => setHover(i,j)}
-              on:mouseout={e => setHover(-1,-1)}
+  <div style={overflowStyle}>
+    <div bind:clientWidth={width} style={`height: ${height}px`}>
+      <svg 
+        height={rotatedHeight}
+        style={`margin-top: ${(rotatedWidth - width)/2}px; margin-left: ${Math.min((width - rotatedWidth)/2, 0)}px; transform: rotate(${rotated?"90":"0"}deg)`}
+        width={rotatedWidth}
+      >
+        <g>
+          {#each stackedData as d}
+            <rect
+              fill={colorFunction(d.key)}
+              height={stackedScale(totalSum - d.value) - stackedScale(totalSum)}
+              on:mouseover={e => setHover(d.labelIndex, d.keyIndex)}
+              on:mouseout={e => setHover(-1, -1)}
               opacity={(
-                (hover.labelIndex===i && hover.keyIndex===j) || hover.labelIndex===-1 
+                (hover.labelIndex===d.labelIndex && hover.keyIndex===d.keyIndex) || hover.labelIndex===-1
                 ? 1 : 0.5
               )}
-              width={p.width} 
-              x={p.x} 
-              y={p.y} 
+              width={stackedBarsWidth}
+              x={paddingLeft}
+              y={stackedScale(d.value + d.lastSum)}
             />
           {/each}
-
-          {#if showLabel(i)}
-            <text
-              class="key-label"
-              dy={rotated ? "0.5em" : "1em"}
-              fill={d.labelValue > 0 ? "" : "#bbb"}
-              text-anchor={rotated ? "end" : "middle"}
-              transform={`
-                translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0)})
-                rotate(${rotated?"-90":"0"})
-              `}
-              x={0}
-              y={0}
-            >{d.label}</text>
-          {/if}
-
-          {#if showLabelValue(i, d.labelValue)}
-            <text
-              class="value-label"
-              text-anchor={rotated ? "start" : "middle"}
-              dy={rotated ? "0.35em" : 0}
-              transform={`
-                translate(${d.x + barBandWidth/2},${d.y - 2})
-                rotate(${rotated?"-90":"0"})
-              `}
-              x={0}
-              y={0}
-            >{d.labelDisplayValue}</text>
-          {/if}
-        {/each}
-      </g>
+        </g>
+        <g>
+          {#each extendedData as d, i}
+            {#each d.pixelValues as p, j}
+              <rect 
+                fill={colorFunction(d.keys[j])}
+                height={p.height}
+                on:mouseover={e => setHover(i,j)}
+                on:mouseout={e => setHover(-1,-1)}
+                opacity={(
+                  (hover.labelIndex===i && hover.keyIndex===j) || hover.labelIndex===-1 
+                  ? 1 : 0.5
+                )}
+                width={p.width} 
+                x={p.x} 
+                y={p.y} 
+              />
+            {/each}
   
-      <text text-anchor="middle" x={0} y={0} transform={`translate(${(chartLeftOffset + (rotatedWidth-chartLeftOffset)/2)},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
-      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
-      <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={paddingLeft - 3}>{stackedTitle}</text>
-    </svg>
+            {#if showLabel(i)}
+              {#if showXTicks}
+                <line
+                  class="x-tick"
+                  x1={d.x + barBandWidth/2}
+                  y1={effectiveBottom}
+                  x2={d.x + barBandWidth/2}
+                  y2={effectiveBottom + tickSize}
+                />
+              {/if}
+  
+              <text
+                class="key-label"
+                dy={rotated ? "0.5em" : "1em"}
+                fill={d.labelValue > 0 ? "" : "#bbb"}
+                text-anchor={rotated ? "end" : "middle"}
+                transform={`
+                  translate(${d.x + barBandWidth/2 + (rotated ? -2 : 0)},${effectiveBottom + (rotated ? 1 : 0) + xTickOffset})
+                  rotate(${rotated?"-90":"0"})
+                `}
+                x={0}
+                y={0}
+              >{formatLabel(d.label)}</text>
+            {/if}
+  
+            {#if showLabelValue(i, d.labelValue)}
+              <text
+                class="value-label"
+                text-anchor={rotated ? "start" : "middle"}
+                dy={rotated ? "0.35em" : 0}
+                transform={`
+                  translate(${d.x + barBandWidth/2},${d.y - 2})
+                  rotate(${rotated?"-90":"0"})
+                `}
+                x={0}
+                y={0}
+              >{d.labelDisplayValue}</text>
+            {/if}
+          {/each}
+        </g>
+    
+        <text text-anchor="middle" x={0} y={0} transform={`translate(${(chartLeftOffset + (rotatedWidth-chartLeftOffset)/2)},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
+        <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
+        <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={paddingLeft - 3}>{stackedTitle}</text>
+      </svg>
+    </div>
   </div>
 </main>
 
@@ -232,5 +255,10 @@
 
   .value-label {
     font-size: 12px;
+  }
+
+  .x-tick {
+    stroke: black;
+    stroke-width: 1px;
   }
 </style>
