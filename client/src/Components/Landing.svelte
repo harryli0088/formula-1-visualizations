@@ -9,16 +9,25 @@
 <main>
   <section>
     <div>
-      <p>I want to explore data about:</p>
-      <a class="route" use:link={ROUTES.DNF}>Finishes and Failures <Icon icon={faCarCrash}/></a>
-      <a class="route" use:link={ROUTES.QUALIFYING}>Qualifying vs Race Results <Icon icon={faFlagCheckered}/></a>
+      <h3>Explore data about:</h3>
+  
+      <div><a class="route" use:link={ROUTES.DNF}>Finishes vs Failures <Icon icon={faCarCrash}/></a></div>
+      <div><a class="route" use:link={ROUTES.QUALIFYING}>Qualifying vs Race Results <Icon icon={faFlagCheckered}/></a></div>
     </div>
   </section>
 </main>
 
 <style>
   main {
-    min-height: calc(100vh - 71px - 150px);
+    height: calc(100vh - 71px - 150px);
+  }
+
+  section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
   }
 
   .route {
@@ -30,5 +39,7 @@
     border: 1px solid black;
     text-decoration: none;
     border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 1em;
   }
 </style>

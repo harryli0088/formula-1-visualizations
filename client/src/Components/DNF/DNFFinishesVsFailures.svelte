@@ -16,7 +16,7 @@
 
   export let colorFunction: (status: string) => string = () => "black"
   export let didFinish: (status: string) => boolean = () => true
-  export let getHoverText: ( value: number, total: number, label: string, key: string ) => string = () => ""
+  export let getHoverText: ( value: number, total: number, label: string, key: string, post: string ) => string = () => ""
   export let results: ResultType[] = []
 
   $: data = processFinishVsFailureData(results, $statusIdMap, didFinish)

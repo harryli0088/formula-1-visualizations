@@ -94,7 +94,6 @@
 
   //array of distribution maps that sum the results for the given qualifying
   //distributionMaps[qualifyingIndex] = for the given qualifyingIndex, a key-value object { [position]: number of results that ended in this position  }
-  $: console.log("resultsForPositions",resultsForPositions)
   $: distributionMaps = resultsForPositions.map(
     filteredResults => filteredResults.reduce((acc, r) => {
       if(acc[r.position] === undefined) { //if this is an unexpected position

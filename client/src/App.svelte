@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { faCar } from "@fortawesome/free-solid-svg-icons";
   import { faGithub } from "@fortawesome/free-brands-svg-icons"
   import Icon from 'fa-svelte'
   import Router, {link} from 'svelte-spa-router'
@@ -22,7 +23,7 @@
 <main>
   <nav>
     <section>
-      <a id="logo" use:link={ROUTES.LANDING}><h1>Formula 1 Visualizations</h1></a>
+      <a id="logo" use:link={ROUTES.LANDING}><h1>Formula 1 Visualizations <Icon icon={faCar}/></h1></a>
         
       <a id="github-icon" href="https://github.com/harryli0088/formula-one-visualizations" target="_blank" rel="noopener noreferrer">
         <Icon icon={faGithub}/>
@@ -41,6 +42,12 @@
 </main>
 
 <style>
+  :global([data-svelte-typeahead]) {
+    background-color: transparent !important;
+  }
+  :global([data-svelte-search] input) {
+    background-color: white !important;
+  }
   :global([data-svelte-typeahead] label, [data-svelte-search] label) {
     font-size: 1em !important;
     font-weight: bold;
@@ -48,6 +55,7 @@
   :global(.svelte-typeahead-list) {
     margin: 0;
     z-index: 2;
+    background-color: white !important;
   }
 
   :global(.popover-content) {
@@ -81,5 +89,9 @@
   #github-icon {
     color: inherit;
     font-size: 2em;
+    transition: 0.5s;
+  }
+  #github-icon:hover {
+    transform: scale(1.2);
   }
 </style>
