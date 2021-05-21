@@ -68,6 +68,7 @@
     <br/>
 
     <CircuitsFilter bind:circuitFilter={circuitFilter}/>
+    <br/>
     <DriverFilter bind:driverFilter={driverFilter}/>
 
     <hr/>
@@ -104,6 +105,7 @@
   .radio-filter {
     cursor: pointer;
     margin-right: 1.5em;
+    margin-bottom: 0.5em;
     padding: 0.5em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;

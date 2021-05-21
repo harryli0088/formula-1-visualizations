@@ -81,12 +81,14 @@
     + (xTitle ? textHeight : 0)
   )
   $: paddingLeft = (stackedTitle ? textHeight : 0)
+  $: paddingRight = 10
   $: paddingTop = (rotated ? ctx.measureText(maxDisplayValue.toString()).width + 10 : textHeight)
 
   $: xTickOffset = (showXTicks ? tickSize : 0)
   $: effectiveBottom = rotatedHeight - paddingBottom - xTickOffset
+  $: effectiveRight = rotatedWidth - paddingRight
   $: chartLeftOffset = stackedBarsWidth + gap + paddingLeft
-  $: xScale = scaleBand().domain(labels).range([chartLeftOffset, rotatedWidth])
+  $: xScale = scaleBand().domain(labels).range([chartLeftOffset, effectiveRight])
   $: yScale = scaleLinear().domain([0, maxValue]).range([effectiveBottom, paddingTop])
   $: stackedScale = scaleLinear().domain([0, totalSum || 0]).range([effectiveBottom, paddingTop])
 
@@ -226,7 +228,7 @@
           {/each}
         </g>
     
-        <text text-anchor="middle" x={0} y={0} transform={`translate(${(chartLeftOffset + (rotatedWidth-chartLeftOffset)/2)},${rotatedHeight - (rotated?18:0)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
+        <text text-anchor="middle" x={0} y={0} transform={`translate(${(chartLeftOffset + (rotatedWidth-chartLeftOffset)/2)},${rotatedHeight - (rotated?18:3)}) rotate(${rotated?"180":"0"})`}>{xTitle}</text>
         <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={chartLeftOffset - 3}>{yTitle}</text>
         <text text-anchor="middle" x={0} y={0} transform={`translate(0,${effectiveBottom/2}) rotate(-90)`} dy={paddingLeft - 3}>{stackedTitle}</text>
       </svg>
@@ -237,6 +239,7 @@
 <style>
 	main {
 		text-align: center;
+    background-color: white;
 	}
 
   rect {
