@@ -16,7 +16,7 @@ body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   overflow-x: hidden;
   width: 100vw;
-  background-color: #F8F9F9;
+  background-color: #EBEDEF;
 }
 
 label {
@@ -58,10 +58,10 @@ button:focus {
 }
 
 a {
-  color: #AED6F1;
+  color: #5499C7;
 }
 a:visited {
-	color: #D2B4DE;
+	color: #AF7AC5;
 }
 
 
